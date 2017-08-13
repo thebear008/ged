@@ -162,10 +162,15 @@ if (php_sapi_name() == "cli") {
   if ($search != '') {
     # detect pattern searchBar
     ##########################
+    $flagMatching = False;
+    
+    ###############
     # case "x or y"
+    ###############
     $pattern = "/([^ ]+) or ([^ ]+)/";
     preg_match($pattern, $search, $matches);
     if (!empty($matches) && isset($matches[1]) && isset($matches[2])) {
+      $flagMatching = True;
       $firstMatch = $matches[1];
       $secondMatch = $matches[2];
 
@@ -179,8 +184,78 @@ if (php_sapi_name() == "cli") {
       }
       $subQuery = implode(",", $arraySlugWithChildren);
       $result = $db->query(sprintf("select label from myFiles where slug in (select file_slug from tags_files where tag_slug in (%s))", $subQuery));
-    } else {
+    }
+
+    ################
+    # case "x and y"
+    ################
+    $pattern = "/([^ ]+) and ([^ ]+)/";
+    preg_match($pattern, $search, $matches);
+    if (!empty($matches) && isset($matches[1]) && isset($matches[2])) {
+      $flagMatching = True;
+      $firstMatch = $matches[1];
+      $secondMatch = $matches[2];
+
+      $firstArraySlugWithChildren = array("'$firstMatch'");
+      $result = $db->query(sprintf('select slug from myTags where top_tag = "%s"', slugify($firstMatch)));
+      while ($myResult = $result->fetchArray()) {
+        $mySlug = $myResult[0];
+        $firstArraySlugWithChildren[] = "'$mySlug'";
+      }
+      $subQuery = implode(",", $firstArraySlugWithChildren);
+      $firstQuery = sprintf("select label from myFiles where slug in (select file_slug from tags_files where tag_slug in (%s))", $subQuery);
+
+      $secondArraySlugWithChildren = array("'$secondMatch'");
+      $result = $db->query(sprintf('select slug from myTags where top_tag = "%s"', slugify($secondMatch)));
+      while ($myResult = $result->fetchArray()) {
+        $mySlug = $myResult[0];
+        $secondArraySlugWithChildren[] = "'$mySlug'";
+      }
+      $subQuery = implode(",", $secondArraySlugWithChildren);
+      $secondQuery = sprintf("select label from myFiles where slug in (select file_slug from tags_files where tag_slug in (%s))", $subQuery);
+
+      $result = $db->query(sprintf("%s INTERSECT %s", $firstQuery, $secondQuery));
+    }
+
+
+    ####################
+    # case "x without y"
+    ####################
+    $pattern = "/([^ ]+) without ([^ ]+)/";
+    preg_match($pattern, $search, $matches);
+    if (!empty($matches) && isset($matches[1]) && isset($matches[2])) {
+      $flagMatching = True;
+      $firstMatch = $matches[1];
+      $secondMatch = $matches[2];
+
+      $firstArraySlugWithChildren = array("'$firstMatch'");
+      $result = $db->query(sprintf('select slug from myTags where top_tag = "%s"', slugify($firstMatch)));
+      while ($myResult = $result->fetchArray()) {
+        $mySlug = $myResult[0];
+        $firstArraySlugWithChildren[] = "'$mySlug'";
+      }
+      $subQuery = implode(",", $firstArraySlugWithChildren);
+      $firstQuery = sprintf("select label from myFiles where slug in (select file_slug from tags_files where tag_slug in (%s))", $subQuery);
+
+      $secondArraySlugWithChildren = array("'$secondMatch'");
+      $result = $db->query(sprintf('select slug from myTags where top_tag = "%s"', slugify($secondMatch)));
+      while ($myResult = $result->fetchArray()) {
+        $mySlug = $myResult[0];
+        $secondArraySlugWithChildren[] = "'$mySlug'";
+      }
+      $subQuery = implode(",", $secondArraySlugWithChildren);
+      $secondQuery = sprintf("select label from myFiles where slug in (select file_slug from tags_files where tag_slug in (%s))", $subQuery);
+
+      $result = $db->query(sprintf("%s and label not in (%s)", $firstQuery, $secondQuery));
+    }
+
+
+
+
+    if ($flagMatching == False) { 
+      ###############
       # default case
+      ###############
       $arraySlugWithChildren = array("'$search'");
       # look for tag and children tags (n+1)
       $result = $db->query(sprintf('select slug from myTags where top_tag = "%s"', slugify($search)));
