@@ -146,10 +146,53 @@ if (php_sapi_name() == "cli") {
 
   $folderPath = "/var/www/html/ged/";
 
+  # searchBar
+  echo "<h2>Search bar</h2>";
+  echo "<form method='GET' >";
+  echo sprintf("<input id='searchBar' name='searchBar' type='text' value='%s' />", ( isset($_GET['searchBar'])? $_GET['searchBar'] : ''));
+  echo "</form>";
+
   # myFiles
   echo sprintf("<h2>%s</h2>", "Media listing");
   $db = new SQLite3(sprintf('%s%s%s', $folderPath, DIRECTORY_SEPARATOR, '.ged.db'));
   $result = $db->query("select label from myFiles order by label");
+
+  # filter searchBar
+  if (isset($_GET['searchBar'])) { $search = $_GET['searchBar']; } else {$search = '';}
+  if ($search != '') {
+    # detect pattern searchBar
+    ##########################
+    # case "x or y"
+    $pattern = "/([^ ]+) or ([^ ]+)/";
+    preg_match($pattern, $search, $matches);
+    if (!empty($matches) && isset($matches[1]) && isset($matches[2])) {
+      $firstMatch = $matches[1];
+      $secondMatch = $matches[2];
+
+      $arraySlugWithChildren = array("'$firstMatch'", "'$secondMatch'");
+      foreach (array($firstMatch, $secondMatch) as $slug) {
+        $result = $db->query(sprintf('select slug from myTags where top_tag = "%s"', slugify($slug)));
+        while ($myResult = $result->fetchArray()) {
+          $mySlug = $myResult[0];
+          $arraySlugWithChildren[] = "'$mySlug'";
+        }
+      }
+      $subQuery = implode(",", $arraySlugWithChildren);
+      $result = $db->query(sprintf("select label from myFiles where slug in (select file_slug from tags_files where tag_slug in (%s))", $subQuery));
+    } else {
+      # default case
+      $arraySlugWithChildren = array("'$search'");
+      # look for tag and children tags (n+1)
+      $result = $db->query(sprintf('select slug from myTags where top_tag = "%s"', slugify($search)));
+      while ($myResult = $result->fetchArray()) {
+        $mySlug = $myResult[0];
+        $arraySlugWithChildren[] = "'$mySlug'";
+      }
+      $subQuery = implode(",", $arraySlugWithChildren);
+      $result = $db->query(sprintf("select label from myFiles where slug in (select file_slug from tags_files where tag_slug in (%s))", $subQuery));
+    }
+
+  }
   echo "<ul>";
   while ($myResult = $result->fetchArray()){
     echo sprintf("<li>%s</li>", $myResult[0]);
