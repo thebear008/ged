@@ -30,12 +30,48 @@ function slugify($text)
 # if php client
 if (php_sapi_name() == "cli") {
   # options from command line
-  $myOptions = getopt("p:t:f:", array(
+  $myOptions = getopt("p:t:f:h", array(
     "path:",
     "tag:",
-    "file:"
+    "file:",
+    "addTag",
+    "help",
+    "tagParent:"
   ));
+
+  # help function
+  function usage() {
+    echo <<<EOF
+h|help    : show this message
+p|path    : path directory with datas REQUIRED
+t|tag     : tag to add/delete or link to file
+f|file    : file to link to tag
+addTag    : action to add tag to DB
+tagParent : tag parent when adding new tag
+
+examples:
+  # add new data if needed
+  php index.php --path /home/lonclegr/Images/ged
+
+  # connect tag to file
+  php index.php --path /home/lonclegr/Images/ged --tag woman --file woman.jpg
+
+  # add tag without parent tag
+  php index.php --path /home/lonclegr/Images/ged --addTag --tag animal
+
+  # add tag with parent tag
+  php index.php --path /home/lonclegr/Images/ged --addTag --tag tiger --tagParent animal
+
+EOF;
+  }
+
+  if (isset($myOptions["h"]) || isset($myOptions['help'])) {
+    usage();
+    exit(0);
+  }
+
   if (!isset($myOptions["p"]) && !isset($myOptions['path'])) {
+    usage();
     die("Parameter p|path required");
   }
   if (isset($myOptions["p"])) { $folderPath = $myOptions['p']; }
@@ -63,12 +99,53 @@ if (php_sapi_name() == "cli") {
         echo sprintf("%s\n", $content);
 				$mySlugifiedText = slugify($content);
 				$arrayResult = $db->querySingle(sprintf('select * from myFiles where slug = "%s"', $mySlugifiedText));
-				if (empty($arrayResult)) {
+        if (empty($arrayResult)) {
+          echo sprintf("Add file '%s' to db \n", $content);
 					$db->exec(sprintf('insert into myFiles (label, slug) values ("%s", "%s")', $content, $mySlugifiedText));
 				}
       }
     }
   }
+
+
+  if (isset($myOptions["addTag"])) {
+    echo "Option add tag detected! \n";
+    if ( (isset($myOptions['t']) || isset($myOptions['tag'])) ) {
+      $myTag = False;
+      if (isset($myOptions['t'])) { $myTag = $myOptions['t']; }
+      if (isset($myOptions["tag"])) { $myTag = $myOptions["tag"]; }
+
+      $myTagParent = False;
+      if (isset($myOptions["tagParent"])) { $myTagParent = $myOptions["tagParent"]; }
+
+      if ($myTag) {
+        # test if tag exists
+        $arrayResult = $db->querySingle(sprintf('select * from myTags where slug = "%s"', slugify($myTag)));
+        if (!empty($arrayResult)) {
+          die(sprintf("ERROR : tag '%s' is already present into database.", $myTag));
+        } else {
+          if ($myTagParent) {
+            # create tag with parent
+            $arrayResult = $db->querySingle(sprintf('select * from myTags where slug = "%s"', slugify($myTagParent)));
+            if (empty($arrayResult)) {
+              die(sprintf("ERROR : tagParent '%s' is not present into database.", $myTagParent));
+            } else {
+              $db->exec(sprintf('insert into myTags (tag, slug, top_tag) values ("%s", "%s", "%s")', $myTag, slugify($myTag), slugify($myTagParent))); 
+              echo sprintf("Tag added successfully : '%s' with parent '%s'", $myTag, $myTagParent);
+            }
+          } else {
+            # create tag without parent
+            $db->exec(sprintf('insert into myTags (tag, slug, top_tag) values ("%s", "%s", null)', $myTag, slugify($myTag))); 
+            echo sprintf("Tag added successfully : '%s'", $myTag);
+          }
+        }
+      }
+
+
+
+    }
+  }
+
 
 #  echo sprintf("Listing myFiles content\n");
 #  $result = $db->query("select * from myFiles");
@@ -133,6 +210,7 @@ if (php_sapi_name() == "cli") {
   }
 
   $db->close();
+  echo "\n";
 } else {
   # if php and httpd
   error_reporting(E_ALL);
