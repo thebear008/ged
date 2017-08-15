@@ -1,5 +1,77 @@
 <?php
 
+class DB extends SQLite3 {
+
+
+  /**
+   * @return string
+   * */
+  public function showTagTree($parent = False) {
+    $string = "<ul>";
+
+    if ($parent) {
+      $result = $this->query(sprintf("select slug from myTags where top_tag = '%s' order by tag", $parent));
+    } else {
+      $result = $this->query("select slug from myTags where top_tag is null order by tag");
+    } 
+    while ($myResult = $result->fetchArray()){
+      $string .= sprintf("<li>%s</li>", $myResult[0]);
+      $string .= $this->showTagTree($myResult[0]);
+    }
+    $string .= "</ul>";
+
+    return $string;
+  }
+
+  /**
+   * @param $tag string
+   * @return array
+   * */
+  public function getTagAndChildren($tag) {
+    $return = array();
+    $arrayResult = $this->querySingle(sprintf('select slug from myTags where slug = "%s"', slugify($tag)));
+    if (empty($arrayResult)) {
+      throw new Exception(sprintf("Tag '%s' unknown", $tag));
+    }
+
+    $return[$arrayResult] = "'$arrayResult'";
+    $flag = True;
+    while ($flag) {
+      $flag = False;
+      $total = count($return);
+      $result = $this->query(sprintf("select slug from myTags where top_tag IN (%s) order by slug ", implode(",", $return)));
+      while ($myResult = $result->fetchArray()){
+        $return[$myResult[0]] = "'$myResult[0]'";
+      }
+      if ($total < count($return)) { $flag = True; }
+    }
+
+    return $return;
+  }
+
+
+  /**
+   * @param $tag string
+   * @param $print boolean
+   * @return void
+   * */
+  public function deleteAllFromTag($tag, $print = True){
+    # delete records from tags_files table
+    $this->query(sprintf("DELETE FROM tags_files where tag_slug = '%s'", slugify($tag)));
+
+    if ($print) {
+      echo sprintf("%d records erased from tags_files with tag '%s' \n", $this->changes(), $tag);
+    }
+
+    # delete record from myTags table
+    $this->query(sprintf("DELETE FROM myTags where slug = '%s'", slugify($tag)));
+
+    if ($print) {
+      echo sprintf("%d records erased from myTags with tag '%s' \n", $this->changes(), $tag);
+    }
+  }
+}
+
 function slugify($text)
 {
   // replace non letter or digits by -
@@ -35,6 +107,7 @@ if (php_sapi_name() == "cli") {
     "tag:",
     "file:",
     "addTag",
+    "delTag",
     "help",
     "tagParent:"
   ));
@@ -47,6 +120,7 @@ p|path    : path directory with datas REQUIRED
 t|tag     : tag to add/delete or link to file
 f|file    : file to link to tag
 addTag    : action to add tag to DB
+delTag    : action to delete tag to DB
 tagParent : tag parent when adding new tag
 
 examples:
@@ -61,6 +135,9 @@ examples:
 
   # add tag with parent tag
   php index.php --path /home/lonclegr/Images/ged --addTag --tag tiger --tagParent animal
+  
+  # add tag without parent tag
+  php index.php --path /home/lonclegr/Images/ged --delTag --tag animal
 
 EOF;
   }
@@ -87,7 +164,7 @@ EOF;
   $listFolder = scandir($folderPath);
 
   # SQLite3
-  $db = new SQLite3(sprintf('%s%s%s', $folderPath, DIRECTORY_SEPARATOR, '.ged.db'));
+  $db = new DB(sprintf('%s%s%s', $folderPath, DIRECTORY_SEPARATOR, '.ged.db'));
   $db->exec('CREATE TABLE if not exists myFiles (label STRING, slug STRING)');
 
   echo sprintf("Listing folder %s\n", $folderPath);
@@ -140,11 +217,36 @@ EOF;
           }
         }
       }
-
-
-
     }
   }
+
+
+
+  if (isset($myOptions["delTag"])) {
+    echo "Option delete tag detected! \n";
+    if ( (isset($myOptions['t']) || isset($myOptions['tag'])) ) {
+      $myTag = False;
+      if (isset($myOptions['t'])) { $myTag = $myOptions['t']; }
+      if (isset($myOptions["tag"])) { $myTag = $myOptions["tag"]; }
+
+      if ($myTag) {
+        # test if tag exists
+        $arrayResult = $db->querySingle(sprintf('select * from myTags where slug = "%s"', slugify($myTag)));
+        if (empty($arrayResult)) {
+          die(sprintf("ERROR : tag '%s' is not present into database.", $myTag));
+        } else {
+          # del tag
+          # look for tag and children
+          foreach ($db->getTagAndChildren($myTag) as $tagToDelete) {
+            $db->deleteAllFromTag($tagToDelete);
+          }
+        }
+      }
+    }
+  }
+
+
+
 
 
 #  echo sprintf("Listing myFiles content\n");
@@ -162,17 +264,6 @@ EOF;
      ),
      "car"
    );
-
-#  $db->exec(sprintf('insert into myTags (tag, slug, top_tag) values ("%s", "%s", null)', "human", slugify("human"))); 
-#  $db->exec(sprintf('insert into myTags (tag, slug, top_tag) values ("%s", "%s", null)', "car", slugify("car"))); 
-#  $db->exec(sprintf('insert into myTags (tag, slug, top_tag) values ("%s", "%s", "%s")', "man", slugify("man"), slugify("human"))); 
-#  $db->exec(sprintf('insert into myTags (tag, slug, top_tag) values ("%s", "%s", "%s")', "woman", slugify("woman"), slugify("human"))); 
-
-#  echo sprintf("Listing myTags content\n");
-#  $result = $db->query("select * from myTags");
-#  while ($myResult = $result->fetchArray()){
-#     print_r($myResult);
-#  }
 
   # tags_files
   $db->exec('CREATE TABLE if not exists tags_files (file_slug STRING, tag_slug STRING)');
@@ -232,7 +323,7 @@ EOF;
 
   # myFiles
   echo sprintf("<h2>%s</h2>", "Media listing");
-  $db = new SQLite3(sprintf('%s%s%s', $folderPath, DIRECTORY_SEPARATOR, '.ged.db'));
+  $db = new DB(sprintf('%s%s%s', $folderPath, DIRECTORY_SEPARATOR, '.ged.db'));
   $result = $db->query("select label from myFiles order by label");
 
   # filter searchBar
@@ -260,6 +351,10 @@ EOF;
           $arraySlugWithChildren[] = "'$mySlug'";
         }
       }
+
+      # hack
+      $arraySlugWithChildren = array_merge($db->getTagAndChildren($firstMatch), $db->getTagAndChildren($secondMatch));
+
       $subQuery = implode(",", $arraySlugWithChildren);
       $result = $db->query(sprintf("select label from myFiles where slug in (select file_slug from tags_files where tag_slug in (%s))", $subQuery));
     }
@@ -280,7 +375,8 @@ EOF;
         $mySlug = $myResult[0];
         $firstArraySlugWithChildren[] = "'$mySlug'";
       }
-      $subQuery = implode(",", $firstArraySlugWithChildren);
+
+      $subQuery = implode(",", $db->getTagAndChildren($firstMatch));
       $firstQuery = sprintf("select label from myFiles where slug in (select file_slug from tags_files where tag_slug in (%s))", $subQuery);
 
       $secondArraySlugWithChildren = array("'$secondMatch'");
@@ -289,7 +385,8 @@ EOF;
         $mySlug = $myResult[0];
         $secondArraySlugWithChildren[] = "'$mySlug'";
       }
-      $subQuery = implode(",", $secondArraySlugWithChildren);
+      $subQuery = implode(",", $db->getTagAndChildren($secondMatch));
+#      $subQuery = implode(",", $secondArraySlugWithChildren);
       $secondQuery = sprintf("select label from myFiles where slug in (select file_slug from tags_files where tag_slug in (%s))", $subQuery);
 
       $result = $db->query(sprintf("%s INTERSECT %s", $firstQuery, $secondQuery));
@@ -312,7 +409,7 @@ EOF;
         $mySlug = $myResult[0];
         $firstArraySlugWithChildren[] = "'$mySlug'";
       }
-      $subQuery = implode(",", $firstArraySlugWithChildren);
+      $subQuery = implode(",", $db->getTagAndChildren($firstMatch));
       $firstQuery = sprintf("select label from myFiles where slug in (select file_slug from tags_files where tag_slug in (%s))", $subQuery);
 
       $secondArraySlugWithChildren = array("'$secondMatch'");
@@ -321,7 +418,7 @@ EOF;
         $mySlug = $myResult[0];
         $secondArraySlugWithChildren[] = "'$mySlug'";
       }
-      $subQuery = implode(",", $secondArraySlugWithChildren);
+      $subQuery = implode(",", $db->getTagAndChildren($secondMatch));
       $secondQuery = sprintf("select label from myFiles where slug in (select file_slug from tags_files where tag_slug in (%s))", $subQuery);
 
       $result = $db->query(sprintf("%s and label not in (%s)", $firstQuery, $secondQuery));
@@ -341,6 +438,10 @@ EOF;
         $mySlug = $myResult[0];
         $arraySlugWithChildren[] = "'$mySlug'";
       }
+
+      # hack
+      $arraySlugWithChildren = $db->getTagAndChildren($search);
+
       $subQuery = implode(",", $arraySlugWithChildren);
       $result = $db->query(sprintf("select label from myFiles where slug in (select file_slug from tags_files where tag_slug in (%s))", $subQuery));
     }
@@ -355,20 +456,7 @@ EOF;
 
   # myTags
   echo sprintf("<h2>%s</h2>", "Tag listing");
-  $result = $db->query("select tag from myTags where top_tag is null order by tag");
-  echo "<ul>";
-  while ($myResult = $result->fetchArray()){
-    $tag = $myResult[0];
-    echo sprintf("<li>%s</li>", $tag);
-    $subResult = $db->query(sprintf("select tag from myTags where top_tag = '%s' order by tag", $tag));
-    echo "<ul>";
-    while ($mySubResult = $subResult->fetchArray()) {
-      $subTag = $mySubResult[0];
-      echo sprintf("<li>%s</li>", $subTag);
-    }
-    echo "</ul>";
-  }
-  echo "</ul>";
+  echo $db->showTagTree();
 
   # tags_files
   echo sprintf("<h2>%s</h2>", "Links between files and tags");
