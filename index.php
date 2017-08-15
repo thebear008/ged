@@ -270,7 +270,7 @@ if (php_sapi_name() == "cli") {
   }
   echo "<ul>";
   while ($myResult = $result->fetchArray()){
-    echo sprintf("<li>%s</li>", $myResult[0]);
+    echo sprintf("<img height='80px' src='/ged/datas/%s' />", $myResult[0]);
   }
   echo "</ul>";
 
