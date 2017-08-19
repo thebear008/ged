@@ -310,10 +310,21 @@ EOF;
   echo "<html>";
   echo "<head>";
   echo sprintf("<title>GED</title>");
+  echo "<style>";
+  echo "div.firstColumn {width:30%; padding:0; margin: 0; display:inline;} ";
+  echo "div.secondColumn {width:50%; padding:0; margin: 0; display:inline;}";
+  echo "div.thirdColumn {width:20%; padding:0; margin: 0; display:inline;}";
+  echo "div.Column {float:left; }";
+  echo "</style>";
   echo "</head>";
   echo "<body>";
 
   $folderPath = "/var/www/html/ged/";
+  $db = new DB(sprintf('%s%s%s', $folderPath, DIRECTORY_SEPARATOR, '.ged.db'));
+
+  # firstColumn
+  echo "<div class='firstColumn Column'>";
+
 
   # searchBar
   echo "<h2>Search bar</h2>";
@@ -321,9 +332,38 @@ EOF;
   echo sprintf("<input id='searchBar' name='searchBar' type='text' value='%s' />", ( isset($_GET['searchBar'])? $_GET['searchBar'] : ''));
   echo "</form>";
 
+
+  # myTags
+  echo sprintf("<h2>%s</h2>", "Tag listing");
+  echo $db->showTagTree();
+
+  # tags_files
+  echo sprintf("<h2>%s</h2>", "Links between files and tags");
+  $result = $db->query("select tag_slug, file_slug from tags_files");
+  echo "<table>";
+  echo "<thead><tr><th>Tag</th><th>Media</th></tr></thead>";
+  echo "<tbody>";
+  while ($myResult = $result->fetchArray()){
+    $tag = $myResult[0];
+    $file = $myResult[1];
+    echo sprintf("<tr><td>%s</td><td>%s</td></tr>", $tag, $file);
+  }
+  echo "</tbody>";
+  echo "</table>";
+
+
+
+
+
+  # END : firstColumn
+  echo "</div>";
+
+
+  # secondColumn
+  echo "<div class='secondColumn Column'>";
+
   # myFiles
   echo sprintf("<h2>%s</h2>", "Media listing");
-  $db = new DB(sprintf('%s%s%s', $folderPath, DIRECTORY_SEPARATOR, '.ged.db'));
   $result = $db->query("select label from myFiles order by label");
 
   # filter searchBar
@@ -454,23 +494,14 @@ EOF;
   echo "</ul>";
 
 
-  # myTags
-  echo sprintf("<h2>%s</h2>", "Tag listing");
-  echo $db->showTagTree();
+  # END : secondColumn
+  echo "</div>";
 
-  # tags_files
-  echo sprintf("<h2>%s</h2>", "Links between files and tags");
-  $result = $db->query("select tag_slug, file_slug from tags_files");
-  echo "<table>";
-  echo "<thead><tr><th>Tag</th><th>Media</th></tr></thead>";
-  echo "<tbody>";
-  while ($myResult = $result->fetchArray()){
-    $tag = $myResult[0];
-    $file = $myResult[1];
-    echo sprintf("<tr><td>%s</td><td>%s</td></tr>", $tag, $file);
-  }
-  echo "</tbody>";
-  echo "</table>";
+  # thirdColumn
+  echo "<div class='thirdColumn Column'>";
+  echo "<h2>Show data</h2>";
+  # END : thirdColumn
+  echo "</div>";
 
 
 
