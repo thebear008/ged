@@ -6,6 +6,10 @@
     "center": "50%",
     "right": "30%"
   },
+  "video": {
+    "width": "320",
+    "height": "240"
+  },
   "mediaDirectories": [
     "/Applications/MAMP/htdocs/ged/datas",
     "/var/www/html/ged/datas",
@@ -13,10 +17,16 @@
   ],
   "urlRoot": "/ged/",
   "urlRootDatas": "/ged/datas/",
+  "urlRootThumbnails": "/ged/datas/thumbnails/",
   "tags": {
     "human": {
       "man": null,
       "woman": null
+    },
+    "animal": {
+      "tiger": null,
+      "horse": null,
+      "bear": null
     },
     "vehicule": {
       "car": null,

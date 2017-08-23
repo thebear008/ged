@@ -300,12 +300,26 @@ EOF;
   echo "</style>";
   echo sprintf("<script type='text/javascript'  >
 
-	function populateThirdColumn(mySlug, myImgObject) {
-		var myNewImg = new Image();
-		myNewImg.src = myImgObject.src;
-		myNewImg.style.width = '100%%';
-    document.getElementById(\"myContent\").innerHTML = '';
-    document.getElementById(\"myContent\").appendChild(myNewImg);
+  function populateThirdColumn(mySlug, myImgObject, mp4Name) {
+    if (mp4Name) {
+      var myNewVideo = document.createElement('video');
+      myNewVideo.width = '%d';
+      myNewVideo.height = '%d';
+      myNewVideo.controls = true;
+      var sourceMP4 = document.createElement('source');
+      sourceMP4.src = mp4Name;
+      sourceMP4.type = 'video/mp4';
+      myNewVideo.appendChild(sourceMP4);
+
+      document.getElementById(\"myContent\").innerHTML = '';
+      document.getElementById(\"myContent\").appendChild(myNewVideo);
+    } else {
+      var myNewImg = new Image();
+      myNewImg.src = myImgObject.src;
+      myNewImg.style.width = '100%%';
+      document.getElementById(\"myContent\").innerHTML = '';
+      document.getElementById(\"myContent\").appendChild(myNewImg);
+    }
 		req = new XMLHttpRequest();
 
 		req.onreadystatechange = function(event) {
@@ -345,7 +359,7 @@ EOF;
 
 
 
-	</script>", $jsonArray['urlRoot'], $jsonArray['urlRoot']);
+	</script>", $jsonArray['video']['width'], $jsonArray['video']['height'], $jsonArray['urlRoot'], $jsonArray['urlRoot']);
   echo "</head>";
   echo "<body>";
   echo sprintf("<header>GED v%s</header>", $jsonArray["version"]);
@@ -518,7 +532,16 @@ EOF;
   }
   echo "<ul>";
   while ($myResult = $result->fetchArray()){
-    echo sprintf("<img onclick='populateThirdColumn(\"%s\", this)' height='80px' src='%s%s' />", slugify($myResult[0]), $jsonArray['urlRootDatas'], $myResult[0]);
+    $pictureMedia = $myResult[0];
+
+    # detect if is not mp4 file
+    if (substr($myResult[0],-3) != "mp4") {
+      echo sprintf("<img onclick='populateThirdColumn(\"%s\", this, false)' height='80px' src='%s%s' />", slugify($pictureMedia), $jsonArray['urlRootDatas'], $pictureMedia);
+    } else {
+      $mp4File = $pictureMedia;
+      $pictureMedia = str_replace("mp4", "png", $pictureMedia);
+      echo sprintf("<img onclick='populateThirdColumn(\"%s\", this, \"%s%s\")' height='80px' src='%s%s' />", slugify($pictureMedia), $jsonArray['urlRootDatas'],  $mp4File,  $jsonArray['urlRootThumbnails'], $pictureMedia);
+    }
   }
   echo "</ul>";
 

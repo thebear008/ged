@@ -5,9 +5,9 @@
 case "$1" in
   "local-linux")
     echo "Deploying code locally on Linux"
-    sudo cp -v *.php /var/www/html/ged/
-    sudo cp -v /home/lonclegr/Images/ged/.ged.db /var/www/html/ged/
+    sudo cp -v *.php *.json /var/www/html/ged/
     sudo cp -rv /home/lonclegr/Images/ged/* /var/www/html/ged/datas/
+    sudo chown -R apache. /var/www/html/ged
   ;;
   "local-mac")
     echo "Deploying code locally on Mac"
