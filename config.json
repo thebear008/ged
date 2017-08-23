@@ -1,0 +1,22 @@
+{
+  "version":  "1.0",
+  "mediaDirectories": [
+    "/Applications/MAMP/htdocs/ged/datas",
+    "/var/www/html/ged/datas",
+    "F:/ged/datas"
+  ],
+  "urlRoot": "/ged/",
+  "urlRootDatas": "/ged/datas/",
+  "tags": {
+    "human": {
+      "man": null,
+      "woman": null
+    },
+    "vehicule": {
+      "car": null,
+      "motorbike": {
+        "roadster": null
+      }
+    }
+  }
+}

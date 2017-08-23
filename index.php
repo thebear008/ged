@@ -1,76 +1,7 @@
 <?php
+session_start();
 
-class DB extends SQLite3 {
-
-
-  /**
-   * @return string
-   * */
-  public function showTagTree($parent = False) {
-    $string = "<ul>";
-
-    if ($parent) {
-      $result = $this->query(sprintf("select slug from myTags where top_tag = '%s' order by tag", $parent));
-    } else {
-      $result = $this->query("select slug from myTags where top_tag is null order by tag");
-    } 
-    while ($myResult = $result->fetchArray()){
-      $string .= sprintf("<li>%s</li>", $myResult[0]);
-      $string .= $this->showTagTree($myResult[0]);
-    }
-    $string .= "</ul>";
-
-    return $string;
-  }
-
-  /**
-   * @param $tag string
-   * @return array
-   * */
-  public function getTagAndChildren($tag) {
-    $return = array();
-    $arrayResult = $this->querySingle(sprintf('select slug from myTags where slug = "%s"', slugify($tag)));
-    if (empty($arrayResult)) {
-      throw new Exception(sprintf("Tag '%s' unknown", $tag));
-    }
-
-    $return[$arrayResult] = "'$arrayResult'";
-    $flag = True;
-    while ($flag) {
-      $flag = False;
-      $total = count($return);
-      $result = $this->query(sprintf("select slug from myTags where top_tag IN (%s) order by slug ", implode(",", $return)));
-      while ($myResult = $result->fetchArray()){
-        $return[$myResult[0]] = "'$myResult[0]'";
-      }
-      if ($total < count($return)) { $flag = True; }
-    }
-
-    return $return;
-  }
-
-
-  /**
-   * @param $tag string
-   * @param $print boolean
-   * @return void
-   * */
-  public function deleteAllFromTag($tag, $print = True){
-    # delete records from tags_files table
-    $this->query(sprintf("DELETE FROM tags_files where tag_slug = '%s'", slugify($tag)));
-
-    if ($print) {
-      echo sprintf("%d records erased from tags_files with tag '%s' \n", $this->changes(), $tag);
-    }
-
-    # delete record from myTags table
-    $this->query(sprintf("DELETE FROM myTags where slug = '%s'", slugify($tag)));
-
-    if ($print) {
-      echo sprintf("%d records erased from myTags with tag '%s' \n", $this->changes(), $tag);
-    }
-  }
-}
+include('class.DB.php');
 
 function slugify($text)
 {
@@ -245,25 +176,8 @@ EOF;
     }
   }
 
-
-
-
-
-#  echo sprintf("Listing myFiles content\n");
-#  $result = $db->query("select * from myFiles");
-#  while ($myResult = $result->fetchArray()){
-#     print_r($myResult);
-#  }
-
   # TAGS
   $db->exec('CREATE TABLE if not exists myTags (tag STRING, slug STRING, top_tag STRING)');
-  $myTags = array(
-    "human" =>  array(
-       "man",
-       "woman"
-     ),
-     "car"
-   );
 
   # tags_files
   $db->exec('CREATE TABLE if not exists tags_files (file_slug STRING, tag_slug STRING)');
@@ -306,6 +220,74 @@ EOF;
   # if php and httpd
   error_reporting(E_ALL);
   ini_set('display_errors', '1');
+
+  # choose media directory from json
+  $jsonFile = dirname(__FILE__) . DIRECTORY_SEPARATOR . "config.json";
+  if (!is_readable($jsonFile)) {
+    echo sprintf("Config file is not readable : %s", $jsonFile);
+    exit(1);
+  }
+  $fileHandle = file_get_contents($jsonFile);
+  $jsonArray = json_decode($fileHandle, true);
+  if (JSON_ERROR_NONE != json_last_error()) {
+    echo sprintf("Error reading JSON : %s", json_last_error_msg());
+    exit(1);
+  }
+
+  # set mediaDirectory if into GET
+  if (isset($_GET['mediaDirectory'])) {
+    $_SESSION['configDirectory'] = $_GET['mediaDirectory'];
+  }
+
+  if (!isset($_SESSION['configDirectory'])) {
+    echo "<h1>Choose data directory</h1>";
+    echo "<ul>";
+    if (isset($jsonArray['mediaDirectories'])) {
+      if (is_array($jsonArray['mediaDirectories'])) {
+        foreach ($jsonArray['mediaDirectories'] as $mediaDirectory) {
+          echo sprintf("<li><a href='?mediaDirectory=%s'>%s</a></li>", $mediaDirectory, $mediaDirectory);
+        }
+      } else {
+        echo sprintf("<li><a href='?mediaDirectory=%s'>%s</a></li>", $jsonArray['mediaDirectories'], $jsonArray['mediaDirectories']);
+      }
+    } else {
+      echo "<li>Key mediaDirectories is missing</li>";
+    }
+    echo "</ul>";
+  } else {
+    $folderPath = $_SESSION['configDirectory'];
+  }
+
+  if (!isset($folderPath)) {
+    die('Please choose your data directory');
+  }
+
+  $db = new DB(sprintf('%s%s%s', $folderPath, DIRECTORY_SEPARATOR, '.ged.db'));
+  # if not $db then error
+  if (!$db) {
+    echo sprintf("Unable to create DB : %s%s%s",  $folderPath, DIRECTORY_SEPARATOR, '.ged.db');
+    exit(1);
+  }
+  
+  # create tables
+  $db->init();
+
+  # drop all tags
+  $db->dropTags();
+
+  # loadTags
+  if (!isset($jsonArray['tags'])) {
+    echo "Key tags is missing";
+    exit(1);
+  }
+  $db->loadTags($jsonArray['tags']);
+
+  # loadFiles
+  $db->loadFiles($folderPath);
+
+  # cleanTagsFiles
+  $db->cleanTagsFiles();
+
   echo "<!doctype html>";
   echo "<html>";
   echo "<head>";
@@ -316,11 +298,57 @@ EOF;
   echo "div.thirdColumn {width:20%; padding:0; margin: 0; display:inline;}";
   echo "div.Column {float:left; }";
   echo "</style>";
+  echo sprintf("<script type='text/javascript'  >
+
+	function populateThirdColumn(mySlug, myImgObject) {
+		var myNewImg = new Image();
+		myNewImg.src = myImgObject.src;
+		myNewImg.style.width = '100%%';
+    document.getElementById(\"myContent\").innerHTML = '';
+    document.getElementById(\"myContent\").appendChild(myNewImg);
+		req = new XMLHttpRequest();
+
+		req.onreadystatechange = function(event) {
+				// XMLHttpRequest.DONE === 4
+				if (this.readyState === XMLHttpRequest.DONE) {
+						if (this.status === 200) {
+							var myDiv = document.createElement('div');
+							//myParagraph.innerHTML = JSON.parse(this.responseText);
+							myDiv.innerHTML = this.responseText;
+							document.getElementById(\"myContent\").appendChild(myDiv);
+						}
+				}
+		};
+
+		req.open('POST', '%sajax.php', true);
+		req.setRequestHeader(\"Content-type\", \"application/x-www-form-urlencoded\");
+		req.send('slug=' + mySlug);
+	}
+
+
+	function linkTagToFile(myCheckbox, mySlugFile) {
+		req = new XMLHttpRequest();
+
+		req.onreadystatechange = function(event) {
+				// XMLHttpRequest.DONE === 4
+				if (this.readyState === XMLHttpRequest.DONE) {
+						if (this.status === 200) {
+							console.log('Ok linkTagToFile');
+						}
+				}
+		};
+
+		req.open('POST', '%sajax.php', true);
+		req.setRequestHeader(\"Content-type\", \"application/x-www-form-urlencoded\");
+		req.send('slugFile=' + mySlugFile + '&checked=' + myCheckbox.checked + '&slugTag=' + myCheckbox.value);
+	}
+
+
+
+	</script>", $jsonArray['urlRoot'], $jsonArray['urlRoot']);
   echo "</head>";
   echo "<body>";
 
-  $folderPath = "/var/www/html/ged/";
-  $db = new DB(sprintf('%s%s%s', $folderPath, DIRECTORY_SEPARATOR, '.ged.db'));
 
   # firstColumn
   echo "<div class='firstColumn Column'>";
@@ -335,7 +363,7 @@ EOF;
 
   # myTags
   echo sprintf("<h2>%s</h2>", "Tag listing");
-  echo $db->showTagTree();
+  echo $db->showTagTree(False, False, False, False);
 
   # tags_files
   echo sprintf("<h2>%s</h2>", "Links between files and tags");
@@ -489,7 +517,7 @@ EOF;
   }
   echo "<ul>";
   while ($myResult = $result->fetchArray()){
-    echo sprintf("<img height='80px' src='/ged/datas/%s' />", $myResult[0]);
+    echo sprintf("<img onclick='populateThirdColumn(\"%s\", this)' height='80px' src='%s%s' />", slugify($myResult[0]), $jsonArray['urlRootDatas'], $myResult[0]);
   }
   echo "</ul>";
 
@@ -500,6 +528,7 @@ EOF;
   # thirdColumn
   echo "<div class='thirdColumn Column'>";
   echo "<h2>Show data</h2>";
+  echo "<div id='myContent'>&nbsp;</div>";
   # END : thirdColumn
   echo "</div>";
 
