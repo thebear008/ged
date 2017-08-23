@@ -291,11 +291,11 @@ EOF;
   echo "<!doctype html>";
   echo "<html>";
   echo "<head>";
-  echo sprintf("<title>GED</title>");
+  echo sprintf("<title>GED v%s</title>", $jsonArray["version"]);
   echo "<style>";
-  echo "div.firstColumn {width:30%; padding:0; margin: 0; display:inline;} ";
-  echo "div.secondColumn {width:50%; padding:0; margin: 0; display:inline;}";
-  echo "div.thirdColumn {width:20%; padding:0; margin: 0; display:inline;}";
+  echo sprintf("div.firstColumn {width:%s; padding:0; margin: 0; display:inline;} ", $jsonArray["width"]["left"]);
+  echo sprintf("div.secondColumn {width:%s; padding:0; margin: 0; display:inline;}", $jsonArray["width"]["center"]);
+  echo sprintf("div.thirdColumn {width:%s; padding:0; margin: 0; display:inline;}", $jsonArray["width"]["right"]);
   echo "div.Column {float:left; }";
   echo "</style>";
   echo sprintf("<script type='text/javascript'  >
@@ -348,7 +348,7 @@ EOF;
 	</script>", $jsonArray['urlRoot'], $jsonArray['urlRoot']);
   echo "</head>";
   echo "<body>";
-
+  echo sprintf("<header>GED v%s</header>", $jsonArray["version"]);
 
   # firstColumn
   echo "<div class='firstColumn Column'>";
@@ -366,19 +366,20 @@ EOF;
   echo $db->showTagTree(False, False, False, False);
 
   # tags_files
-  echo sprintf("<h2>%s</h2>", "Links between files and tags");
-  $result = $db->query("select tag_slug, file_slug from tags_files");
-  echo "<table>";
-  echo "<thead><tr><th>Tag</th><th>Media</th></tr></thead>";
-  echo "<tbody>";
-  while ($myResult = $result->fetchArray()){
-    $tag = $myResult[0];
-    $file = $myResult[1];
-    echo sprintf("<tr><td>%s</td><td>%s</td></tr>", $tag, $file);
-  }
-  echo "</tbody>";
-  echo "</table>";
-
+  if ($jsonArray["debug"] == "true") {
+    echo sprintf("<h2>%s</h2>", "Links between files and tags");
+    $result = $db->query("select tag_slug, file_slug from tags_files");
+    echo "<table>";
+    echo "<thead><tr><th>Tag</th><th>Media</th></tr></thead>";
+    echo "<tbody>";
+    while ($myResult = $result->fetchArray()){
+      $tag = $myResult[0];
+      $file = $myResult[1];
+      echo sprintf("<tr><td>%s</td><td>%s</td></tr>", $tag, $file);
+    }
+    echo "</tbody>";
+    echo "</table>";
+  } # only if debug == "true"
 
 
 

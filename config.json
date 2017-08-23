@@ -1,5 +1,11 @@
 {
-  "version":  "1.0",
+  "version":  "1.0.1",
+  "debug": "true", 
+  "width": {
+    "left": "20%",
+    "center": "50%",
+    "right": "30%"
+  },
   "mediaDirectories": [
     "/Applications/MAMP/htdocs/ged/datas",
     "/var/www/html/ged/datas",
@@ -14,9 +20,11 @@
     },
     "vehicule": {
       "car": null,
-      "motorbike": {
-        "roadster": null
-      }
+      "motorcycle": {
+        "roadster": null,
+        "sportive": null
+      },
+      "bus": null
     }
   }
 }

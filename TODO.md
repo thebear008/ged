@@ -6,5 +6,6 @@
 - [ ] search infini !
 - [ ] click sur le tree (1 fois add, 2 fois or, 3 fois without)
 - [X] json config pour le directory
-- [ ] video mp4 : thumbnail
+- [ ] video mp4 : thumbnail directory
 - [X] link files to tags with checkboxes
+- [ ] delete file properly from UI
