@@ -1,7 +1,9 @@
 # 1.0.2
-- [ ] search infini !
-- [ ] click sur le tree (1 fois add, 2 fois or, 3 fois without)
+
 - [ ] delete file properly from UI
+- [ ] thumbnail can be several picture formats (only png for the moment)
+- [ ] search infini !
+- [ ] javascript from tree to search field
 
 # 1.0.1
 

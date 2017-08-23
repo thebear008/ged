@@ -301,6 +301,17 @@ EOF;
   echo sprintf("<script type='text/javascript'  >
 
   function populateThirdColumn(mySlug, myImgObject, mp4Name) {
+    // reset third column
+    document.getElementById(\"myContent\").innerHTML = '';
+
+    // delete button
+    var myDeleteButton = document.createElement('button');
+    myDeleteButton.innerHTML = 'Delete';
+    myDeleteButton.type = 'button';
+    myDeleteButton.onclick = function() { alert(mySlug); } ;
+    document.getElementById(\"myContent\").appendChild(myDeleteButton);
+    
+
     if (mp4Name) {
       var myNewVideo = document.createElement('video');
       myNewVideo.width = '%d';
@@ -310,14 +321,11 @@ EOF;
       sourceMP4.src = mp4Name;
       sourceMP4.type = 'video/mp4';
       myNewVideo.appendChild(sourceMP4);
-
-      document.getElementById(\"myContent\").innerHTML = '';
       document.getElementById(\"myContent\").appendChild(myNewVideo);
     } else {
       var myNewImg = new Image();
       myNewImg.src = myImgObject.src;
       myNewImg.style.width = '100%%';
-      document.getElementById(\"myContent\").innerHTML = '';
       document.getElementById(\"myContent\").appendChild(myNewImg);
     }
 		req = new XMLHttpRequest();
