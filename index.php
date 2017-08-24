@@ -308,7 +308,28 @@ EOF;
     var myDeleteButton = document.createElement('button');
     myDeleteButton.innerHTML = 'Delete';
     myDeleteButton.type = 'button';
-    myDeleteButton.onclick = function() { alert(mySlug); } ;
+    myDeleteButton.onclick = function() { if (confirm('Confirm delete ' + mySlug + ' ?')) { 
+      myImgObject.parentElement.removeChild(myImgObject);   
+      document.getElementById(\"myContent\").innerHTML = '';
+
+      req = new XMLHttpRequest();
+      req.onreadystatechange = function(event) {
+          // XMLHttpRequest.DONE === 4
+          if (this.readyState === XMLHttpRequest.DONE) {
+              if (this.status === 200) {
+                var myDiv = document.createElement('div');
+                myDiv.innerHTML = this.responseText;
+                document.getElementById(\"myContent\").appendChild(myDiv);
+              }
+          }
+      };
+
+      req.open('POST', '%sajax.php', true);
+      req.setRequestHeader(\"Content-type\", \"application/x-www-form-urlencoded\");
+      req.send('myDeleteSlug=' + mySlug);
+
+
+    } else { alert('Action cancelled.')  }   } ;
     document.getElementById(\"myContent\").appendChild(myDeleteButton);
     
 
@@ -367,7 +388,7 @@ EOF;
 
 
 
-	</script>", $jsonArray['video']['width'], $jsonArray['video']['height'], $jsonArray['urlRoot'], $jsonArray['urlRoot']);
+	</script>", $jsonArray['urlRoot'], $jsonArray['video']['width'], $jsonArray['video']['height'], $jsonArray['urlRoot'], $jsonArray['urlRoot']);
   echo "</head>";
   echo "<body>";
   echo sprintf("<header>GED v%s</header>", $jsonArray["version"]);
@@ -544,11 +565,11 @@ EOF;
 
     # detect if is not mp4 file
     if (substr($myResult[0],-3) != "mp4") {
-      echo sprintf("<img onclick='populateThirdColumn(\"%s\", this, false)' height='80px' src='%s%s' />", slugify($pictureMedia), $jsonArray['urlRootDatas'], $pictureMedia);
+      echo sprintf("<img id='show-%s' onclick='populateThirdColumn(\"%s\", this, false)' height='80px' src='%s%s' />", slugify($pictureMedia), slugify($pictureMedia), $jsonArray['urlRootDatas'], $pictureMedia);
     } else {
       $mp4File = $pictureMedia;
       $pictureMedia = str_replace("mp4", "png", $pictureMedia);
-      echo sprintf("<img onclick='populateThirdColumn(\"%s\", this, \"%s%s\")' height='80px' src='%s%s' />", slugify($pictureMedia), $jsonArray['urlRootDatas'],  $mp4File,  $jsonArray['urlRootThumbnails'], $pictureMedia);
+      echo sprintf("<img id='show-%s' onclick='populateThirdColumn(\"%s\", this, \"%s%s\")' height='80px' src='%s%s' />", slugify($pictureMedia), slugify($pictureMedia), $jsonArray['urlRootDatas'],  $mp4File,  $jsonArray['urlRootThumbnails'], $pictureMedia);
     }
   }
   echo "</ul>";

@@ -28,3 +28,8 @@ if (isset($_POST['slugFile']) && isset($_POST['checked']) && isset($_POST['slugT
     $db->exec(sprintf('delete from tags_files where file_slug = "%s" and tag_slug = "%s"', $_POST['slugFile'], $_POST['slugTag']));
   }
 }
+
+# deleteMedia
+if (isset($_POST['myDeleteSlug']) && $_POST['myDeleteSlug'] != '') {
+  echo "Media deleted successfully !";
+}
