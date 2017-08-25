@@ -300,7 +300,7 @@ EOF;
   echo "</style>";
   echo sprintf("<script type='text/javascript'  >
 
-  function populateThirdColumn(mySlug, myImgObject, mp4Name) {
+  function populateThirdColumn(mySlug, myImgObject, mp4Name, mySlugMp4) {
     // reset third column
     document.getElementById(\"myContent\").innerHTML = '';
 
@@ -326,7 +326,11 @@ EOF;
 
       req.open('POST', '%sajax.php', true);
       req.setRequestHeader(\"Content-type\", \"application/x-www-form-urlencoded\");
-      req.send('myDeleteSlug=' + mySlug);
+      if (mySlugMp4) {
+        req.send('myDeleteSlug=' + mySlugMp4);
+      } else {
+        req.send('myDeleteSlug=' + mySlug);
+      }
 
 
     } else { alert('Action cancelled.')  }   } ;
@@ -565,11 +569,20 @@ EOF;
 
     # detect if is not mp4 file
     if (substr($myResult[0],-3) != "mp4") {
-      echo sprintf("<img id='show-%s' onclick='populateThirdColumn(\"%s\", this, false)' height='80px' src='%s%s' />", slugify($pictureMedia), slugify($pictureMedia), $jsonArray['urlRootDatas'], $pictureMedia);
+      echo sprintf("<img id='show-%s' onclick='populateThirdColumn(\"%s\", this, false, false)' height='80px' src='%s%s' />", slugify($pictureMedia), slugify($pictureMedia), $jsonArray['urlRootDatas'], $pictureMedia);
     } else {
       $mp4File = $pictureMedia;
-      $pictureMedia = str_replace("mp4", "png", $pictureMedia);
-      echo sprintf("<img id='show-%s' onclick='populateThirdColumn(\"%s\", this, \"%s%s\")' height='80px' src='%s%s' />", slugify($pictureMedia), slugify($pictureMedia), $jsonArray['urlRootDatas'],  $mp4File,  $jsonArray['urlRootThumbnails'], $pictureMedia);
+      foreach ($jsonArray['allowedExtensions'] as $allowedExtension) {
+        $myExplode = explode(".", $mp4File);
+        array_pop($myExplode);
+        $myExplode[] = $allowedExtension;
+        $filename = implode(".", $myExplode);
+        if (file_exists($_SESSION['configDirectory'] . DIRECTORY_SEPARATOR . $jsonArray['thumbnailsDirectory'] . DIRECTORY_SEPARATOR . $filename)) {
+          $pictureMedia = $filename;
+          break;
+        }
+      }
+      echo sprintf("<img id='show-%s' onclick='populateThirdColumn(\"%s\", this, \"%s%s\", \"%s\")' height='80px' src='%s%s' />", slugify($pictureMedia), slugify($pictureMedia), $jsonArray['urlRootDatas'],  $mp4File,  slugify($mp4File), $jsonArray['urlRootThumbnails'], $pictureMedia);
     }
   }
   echo "</ul>";

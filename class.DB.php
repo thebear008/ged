@@ -36,7 +36,9 @@ class DB extends SQLite3 {
    **/
   public function cleanTagsFiles() {
     $this->exec("DELETE FROM tags_files where tag_slug not in (select slug from myTags)");
+    $this->exec("DELETE FROM tags_files where file_slug not in (select slug from myFiles)");
   }
+
 
   /**
    * @return void
@@ -189,4 +191,39 @@ class DB extends SQLite3 {
     return $array;
   }
 
+  /**
+   * @return array
+   * @param string $slug
+   * */
+  public function getFile($slug) {
+    $arrayResult = $this->querySingle(sprintf('select * from myFiles where slug = "%s"', $slug), true);
+    if (!empty($arrayResult)) {
+      return $arrayResult;
+    } else {
+      return False;
+    }
+  }
+
+  /**
+   * @return void
+   * @param string $slug
+   * @param array $jsonConfig
+   * */
+  public function deleteFile($slug, $jsonConfig) {
+    if ($arrayResult = $this->querySingle(sprintf('select * from myFiles where slug = "%s"', $slug), true)) {
+      $this->query(sprintf("DELETE FROM myFiles where slug = '%s'", $slug));
+      $this->query(sprintf("DELETE FROM tags_files where file_slug = '%s'", $slug));
+
+      # delete file on FS
+      @unlink($_SESSION['configDirectory'] . DIRECTORY_SEPARATOR . $arrayResult['label']);
+      # delete thumbnails
+      foreach ($jsonConfig['allowedExtensions'] as $allowedExtension) {
+        $myExplode = explode(".", $arrayResult['label']);
+        array_pop($myExplode);
+        $myExplode[] = $allowedExtension;
+        $filename = implode(".", $myExplode);
+        @unlink($_SESSION['configDirectory'] . DIRECTORY_SEPARATOR . $jsonConfig['thumbnailsDirectory'] . DIRECTORY_SEPARATOR . $filename);
+      }
+    }
+  }
 }

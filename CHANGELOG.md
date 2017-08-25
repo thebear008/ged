@@ -1,9 +1,12 @@
-# 1.0.2
+# 1.0.3
 
-- [ ] delete file properly from UI
-- [ ] thumbnail can be several picture formats (only png for the moment)
 - [ ] search infini !
 - [ ] javascript from tree to search field
+
+# 1.0.2
+
+- [X] delete file properly from UI
+- [X] thumbnail can be several picture formats (only png for the moment)
 
 # 1.0.1
 

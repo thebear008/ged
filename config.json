@@ -10,11 +10,17 @@
     "width": "320",
     "height": "240"
   },
+  "allowedExtensions": [
+    "jpg",
+    "png",
+    "gif"
+  ],
   "mediaDirectories": [
     "/Applications/MAMP/htdocs/ged/datas",
     "/var/www/html/ged/datas",
     "F:/ged/datas"
   ],
+  "thumbnailsDirectory": "thumbnails",
   "urlRoot": "/ged/",
   "urlRootDatas": "/ged/datas/",
   "urlRootThumbnails": "/ged/datas/thumbnails/",

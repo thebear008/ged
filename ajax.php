@@ -31,5 +31,11 @@ if (isset($_POST['slugFile']) && isset($_POST['checked']) && isset($_POST['slugT
 
 # deleteMedia
 if (isset($_POST['myDeleteSlug']) && $_POST['myDeleteSlug'] != '') {
-  echo "Media deleted successfully !";
+  $myFile = $db->getFile($_POST['myDeleteSlug']);
+  if ($myFile) {
+    $db->deleteFile($_POST['myDeleteSlug'], $jsonArray);
+    echo "Media deleted successfully !";
+  } else {
+    echo "Error : unable to find Media !";
+  }
 }
