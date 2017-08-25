@@ -297,6 +297,7 @@ EOF;
   echo sprintf("div.secondColumn {width:%s; padding:0; margin: 0; display:inline;}", $jsonArray["width"]["center"]);
   echo sprintf("div.thirdColumn {width:%s; padding:0; margin: 0; display:inline;}", $jsonArray["width"]["right"]);
   echo "div.Column {float:left; }";
+  echo "div.thirdColumn button {display:block; }";
   echo "</style>";
   echo sprintf("<script type='text/javascript'  >
 
