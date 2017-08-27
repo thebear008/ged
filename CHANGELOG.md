@@ -1,7 +1,8 @@
 # 1.0.3
 
-- [ ] search infini !
-- [ ] javascript from tree to search field
+- [X] search infini !
+- [X] Unable to tag video !
+- [X] javascript from tree to search field
 
 # 1.0.2
 

@@ -5,8 +5,8 @@ class DB extends SQLite3 {
    * @return void
    **/
   public function init() {
-    $this->exec('CREATE TABLE if not exists myFiles (label STRING, slug STRING)');
-    $this->exec('CREATE TABLE if not exists myTags (tag STRING, slug STRING, top_tag STRING)');
+    $this->exec('CREATE TABLE if not exists myFiles (label STRING, slug STRING PRIMARY KEY)');
+    $this->exec('CREATE TABLE if not exists myTags (tag STRING, slug STRING PRIMARY KEY, top_tag STRING)');
     $this->exec('CREATE TABLE if not exists tags_files (file_slug STRING, tag_slug STRING)');
   }
 
@@ -105,9 +105,10 @@ class DB extends SQLite3 {
    * @param string $parent
    * @param boolean $checkBoxFlag
    * @param string $slugFile
-   * @param array $arraySlugTags
+   * @param array $arraySlugTags (selected Tags for file)
+   * @param boolean $showSearchButton
    * */
-  public function showTagTree($parent = False, $checkBoxFlag = False, $slugFile = False, $arraySlugTags = False) {
+  public function showTagTree($parent = False, $checkBoxFlag = False, $slugFile = False, $arraySlugTags = False, $showSearchButton = False) {
     $string = "<ul>";
 
     if ($parent) {
@@ -117,13 +118,17 @@ class DB extends SQLite3 {
     } 
     while ($myResult = $result->fetchArray()){
       if ($checkBoxFlag) {
+        # option to add checkBox to tag the current file
         $checkedBoolean = '';
         if (in_array($myResult[0], $arraySlugTags)) { $checkedBoolean = 'checked'; }
         $string .= sprintf("<li>%s <input %s type='checkbox' value='%s' onclick='linkTagToFile(this, \"%s\")' /></li>", $myResult[0], $checkedBoolean, $myResult[0], $slugFile);
+      } elseif ($showSearchButton) {
+        # option to add search button 
+        $string .= sprintf("<li>%s %s</li>", $myResult[0], $this->getSearchButtons($myResult[0]));
       } else {
         $string .= sprintf("<li>%s</li>", $myResult[0]);
       }
-      $string .= $this->showTagTree($myResult[0], $checkBoxFlag, $slugFile, $arraySlugTags);
+      $string .= $this->showTagTree($myResult[0], $checkBoxFlag, $slugFile, $arraySlugTags, $showSearchButton);
     }
     $string .= "</ul>";
 
@@ -226,4 +231,81 @@ class DB extends SQLite3 {
       }
     }
   }
+
+
+  /**
+   * @return array fileSlugs
+   * @param array $tagSlugs with '' : 'tag1', 'tag2', ...
+   * */
+  public function getFilesFromSlugs($tagSlugs) {
+    $sql = sprintf("SELECT file_slug from tags_files where tag_slug in (%s)", implode(",", $tagSlugs));
+    $result = $this->query($sql);
+    $fileSlugs = array();
+    while ($myResult = $result->fetchArray()){
+      $fileSlugs[$myResult[0]] = $myResult[0];
+    }
+    return $fileSlugs;
+  }
+
+  /**
+   * @return array fileLabels
+   * @param array $fileSlugs
+   * */
+  public function getFilesFromTheirSlugs($fileSlugs) {
+    array_walk($fileSlugs, 'prepare_for_sql');
+    $sql = sprintf("SELECT label from myFiles  where slug in (%s) order by label", implode(",", $fileSlugs));
+    $result = $this->query($sql);
+    $fileLabels = array();
+    while ($myResult = $result->fetchArray()){
+      $fileLabels[$myResult[0]] = $myResult[0];
+    }
+    return $fileLabels;
+  }
+
+  /**
+   * @return array fileLabels
+   * */
+  public function getAllFileLabels() {
+    $sql = sprintf("SELECT label from myFiles order by label");
+    $result = $this->query($sql);
+    $fileLabels = array();
+    while ($myResult = $result->fetchArray()){
+      $fileLabels[$myResult[0]] = $myResult[0];
+    }
+    return $fileLabels;
+  }
+
+  /**
+   * @param string $slugTag
+   * @return string displays buttons with javascript hack
+   * */
+  public function getSearchButtons($slugTag) {
+    $myAndButton = '<svg id="%s" onclick="%s" version="1.1" baseProfile="full" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="10" cy="10" r="10" fill="green" />
+      <text x="10" y="12" font-size="10" text-anchor="middle" fill="white">+</text>
+    </svg>';
+    $myWithoutButton = '<svg id="%s" onclick="%s" version="1.1" baseProfile="full" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="10" cy="10" r="10" fill="red" />
+      <text x="10" y="12" font-size="10" text-anchor="middle" fill="white">-</text>
+    </svg>';
+    $myOrButton = '<svg id="%s" onclick="%s" version="1.1" baseProfile="full" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="10" cy="10" r="10" fill="blue" />
+      <text x="10" y="12" font-size="10" text-anchor="middle" fill="white">|</text>
+    </svg>';
+
+    $customAndButton = sprintf($myAndButton, "$slugTag-add-button", "addToSearchInputText('add', '$slugTag')");
+    $customWithoutButton = sprintf($myWithoutButton, "$slugTag-without-button", "addToSearchInputText('without', '$slugTag')");
+    $customOrButton = sprintf($myOrButton, "$slugTag-or-button", "addToSearchInputText('or', '$slugTag')");
+
+    return $customAndButton . $customWithoutButton . $customOrButton;
+  }
+}
+
+/**
+ * @param &$value string such as "file-jpg"
+ * @param $key 
+ * put character "'" around $value
+ * */
+function prepare_for_sql(&$value, $key) {
+  $value = "'$value'";
 }

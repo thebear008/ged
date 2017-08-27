@@ -2,6 +2,7 @@
 session_start();
 
 include('class.DB.php');
+include('class.Search.php');
 
 function slugify($text)
 {
@@ -391,6 +392,16 @@ EOF;
 		req.send('slugFile=' + mySlugFile + '&checked=' + myCheckbox.checked + '&slugTag=' + myCheckbox.value);
 	}
 
+  <!-- addToSearchInputText -->
+  function addToSearchInputText(myAction, mySlugTag) {
+    if (document.getElementById('searchBar').value != '') {
+      document.getElementById('searchBar').value += ' ' + myAction + ' ' + mySlugTag;
+    } else {
+      document.getElementById('searchBar').value = mySlugTag;
+    }
+    document.getElementById('myForm').submit();
+  }
+  <!-- END addToSearchInputText -->
 
 
 	</script>", $jsonArray['urlRoot'], $jsonArray['video']['width'], $jsonArray['video']['height'], $jsonArray['urlRoot'], $jsonArray['urlRoot']);
@@ -404,14 +415,14 @@ EOF;
 
   # searchBar
   echo "<h2>Search bar</h2>";
-  echo "<form method='GET' >";
+  echo "<form method='GET' id='myForm' >";
   echo sprintf("<input id='searchBar' name='searchBar' type='text' value='%s' />", ( isset($_GET['searchBar'])? $_GET['searchBar'] : ''));
   echo "</form>";
 
 
   # myTags
   echo sprintf("<h2>%s</h2>", "Tag listing");
-  echo $db->showTagTree(False, False, False, False);
+  echo $db->showTagTree(False, False, False, False, $showSearchButton = True);
 
   # tags_files
   if ($jsonArray["debug"] == "true") {
@@ -446,130 +457,17 @@ EOF;
   # filter searchBar
   if (isset($_GET['searchBar'])) { $search = $_GET['searchBar']; } else {$search = '';}
   if ($search != '') {
-    # detect pattern searchBar
-    ##########################
-    $flagMatching = False;
-    
-    ###############
-    # case "x or y"
-    ###############
-    $pattern = "/([^ ]+) or ([^ ]+)/";
-    preg_match($pattern, $search, $matches);
-    if (!empty($matches) && isset($matches[1]) && isset($matches[2])) {
-      $flagMatching = True;
-      $firstMatch = $matches[1];
-      $secondMatch = $matches[2];
-
-      $arraySlugWithChildren = array("'$firstMatch'", "'$secondMatch'");
-      foreach (array($firstMatch, $secondMatch) as $slug) {
-        $result = $db->query(sprintf('select slug from myTags where top_tag = "%s"', slugify($slug)));
-        while ($myResult = $result->fetchArray()) {
-          $mySlug = $myResult[0];
-          $arraySlugWithChildren[] = "'$mySlug'";
-        }
-      }
-
-      # hack
-      $arraySlugWithChildren = array_merge($db->getTagAndChildren($firstMatch), $db->getTagAndChildren($secondMatch));
-
-      $subQuery = implode(",", $arraySlugWithChildren);
-      $result = $db->query(sprintf("select label from myFiles where slug in (select file_slug from tags_files where tag_slug in (%s))", $subQuery));
-    }
-
-    ################
-    # case "x and y"
-    ################
-    $pattern = "/([^ ]+) and ([^ ]+)/";
-    preg_match($pattern, $search, $matches);
-    if (!empty($matches) && isset($matches[1]) && isset($matches[2])) {
-      $flagMatching = True;
-      $firstMatch = $matches[1];
-      $secondMatch = $matches[2];
-
-      $firstArraySlugWithChildren = array("'$firstMatch'");
-      $result = $db->query(sprintf('select slug from myTags where top_tag = "%s"', slugify($firstMatch)));
-      while ($myResult = $result->fetchArray()) {
-        $mySlug = $myResult[0];
-        $firstArraySlugWithChildren[] = "'$mySlug'";
-      }
-
-      $subQuery = implode(",", $db->getTagAndChildren($firstMatch));
-      $firstQuery = sprintf("select label from myFiles where slug in (select file_slug from tags_files where tag_slug in (%s))", $subQuery);
-
-      $secondArraySlugWithChildren = array("'$secondMatch'");
-      $result = $db->query(sprintf('select slug from myTags where top_tag = "%s"', slugify($secondMatch)));
-      while ($myResult = $result->fetchArray()) {
-        $mySlug = $myResult[0];
-        $secondArraySlugWithChildren[] = "'$mySlug'";
-      }
-      $subQuery = implode(",", $db->getTagAndChildren($secondMatch));
-#      $subQuery = implode(",", $secondArraySlugWithChildren);
-      $secondQuery = sprintf("select label from myFiles where slug in (select file_slug from tags_files where tag_slug in (%s))", $subQuery);
-
-      $result = $db->query(sprintf("%s INTERSECT %s", $firstQuery, $secondQuery));
-    }
-
-
-    ####################
-    # case "x without y"
-    ####################
-    $pattern = "/([^ ]+) without ([^ ]+)/";
-    preg_match($pattern, $search, $matches);
-    if (!empty($matches) && isset($matches[1]) && isset($matches[2])) {
-      $flagMatching = True;
-      $firstMatch = $matches[1];
-      $secondMatch = $matches[2];
-
-      $firstArraySlugWithChildren = array("'$firstMatch'");
-      $result = $db->query(sprintf('select slug from myTags where top_tag = "%s"', slugify($firstMatch)));
-      while ($myResult = $result->fetchArray()) {
-        $mySlug = $myResult[0];
-        $firstArraySlugWithChildren[] = "'$mySlug'";
-      }
-      $subQuery = implode(",", $db->getTagAndChildren($firstMatch));
-      $firstQuery = sprintf("select label from myFiles where slug in (select file_slug from tags_files where tag_slug in (%s))", $subQuery);
-
-      $secondArraySlugWithChildren = array("'$secondMatch'");
-      $result = $db->query(sprintf('select slug from myTags where top_tag = "%s"', slugify($secondMatch)));
-      while ($myResult = $result->fetchArray()) {
-        $mySlug = $myResult[0];
-        $secondArraySlugWithChildren[] = "'$mySlug'";
-      }
-      $subQuery = implode(",", $db->getTagAndChildren($secondMatch));
-      $secondQuery = sprintf("select label from myFiles where slug in (select file_slug from tags_files where tag_slug in (%s))", $subQuery);
-
-      $result = $db->query(sprintf("%s and label not in (%s)", $firstQuery, $secondQuery));
-    }
-
-
-
-
-    if ($flagMatching == False) { 
-      ###############
-      # default case
-      ###############
-      $arraySlugWithChildren = array("'$search'");
-      # look for tag and children tags (n+1)
-      $result = $db->query(sprintf('select slug from myTags where top_tag = "%s"', slugify($search)));
-      while ($myResult = $result->fetchArray()) {
-        $mySlug = $myResult[0];
-        $arraySlugWithChildren[] = "'$mySlug'";
-      }
-
-      # hack
-      $arraySlugWithChildren = $db->getTagAndChildren($search);
-
-      $subQuery = implode(",", $arraySlugWithChildren);
-      $result = $db->query(sprintf("select label from myFiles where slug in (select file_slug from tags_files where tag_slug in (%s))", $subQuery));
-    }
-
+    $mySearch = new Search($db);
+    $myFileSlugs = $mySearch->go($search);
+    $myFileLabels = $db->getFilesFromTheirSlugs($myFileSlugs);
+  } else {
+    $myFileLabels = $db->getAllFileLabels();
   }
   echo "<ul>";
-  while ($myResult = $result->fetchArray()){
-    $pictureMedia = $myResult[0];
+  foreach ($myFileLabels as $pictureMedia) {
 
     # detect if is not mp4 file
-    if (substr($myResult[0],-3) != "mp4") {
+    if (substr($pictureMedia,-3) != "mp4") {
       echo sprintf("<img id='show-%s' onclick='populateThirdColumn(\"%s\", this, false, false)' height='80px' src='%s%s' />", slugify($pictureMedia), slugify($pictureMedia), $jsonArray['urlRootDatas'], $pictureMedia);
     } else {
       $mp4File = $pictureMedia;
@@ -583,7 +481,7 @@ EOF;
           break;
         }
       }
-      echo sprintf("<img id='show-%s' onclick='populateThirdColumn(\"%s\", this, \"%s%s\", \"%s\")' height='80px' src='%s%s' />", slugify($pictureMedia), slugify($pictureMedia), $jsonArray['urlRootDatas'],  $mp4File,  slugify($mp4File), $jsonArray['urlRootThumbnails'], $pictureMedia);
+      echo sprintf("<img id='show-%s' onclick='populateThirdColumn(\"%s\", this, \"%s%s\", \"%s\")' height='80px' src='%s%s' />", slugify($pictureMedia), slugify($mp4File), $jsonArray['urlRootDatas'],  $mp4File,  slugify($mp4File), $jsonArray['urlRootThumbnails'], $pictureMedia);
     }
   }
   echo "</ul>";
