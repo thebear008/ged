@@ -1,3 +1,7 @@
+# 1.0.6
+
+- [X] add default root for xampp (windows)
+
 # 1.0.5
 
 - [X] fix add button function ("add" instead of "and")
