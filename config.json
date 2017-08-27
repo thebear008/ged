@@ -18,7 +18,8 @@
   "mediaDirectories": [
     "/Applications/MAMP/htdocs/ged/datas",
     "/var/www/html/ged/datas",
-    "F:/ged/datas"
+    "F:/ged/datas",
+    "C:/xampp/htdocs/ged/datas"
   ],
   "thumbnailsDirectory": "thumbnails",
   "urlRoot": "/ged/",
