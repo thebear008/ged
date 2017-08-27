@@ -1,6 +1,10 @@
+# 1.0.5
+
+- [X] fix add button function ("add" instead of "and")
+
 # 1.0.4
 
-  - [X] add reset button for search field
+- [X] add reset button for search field
 
 # 1.0.3
 

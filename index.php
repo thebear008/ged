@@ -410,6 +410,15 @@ EOF;
   }
   <!-- END resetForm -->
 
+  <!-- launchForm -->
+  function launchForm(myEvent) {
+    if (myEvent.keyCode == 13) {
+      document.getElementById('myForm').submit();
+    }
+    return false;
+  }
+  <!-- END launchForm -->
+
 	</script>", $jsonArray['urlRoot'], $jsonArray['video']['width'], $jsonArray['video']['height'], $jsonArray['urlRoot'], $jsonArray['urlRoot']);
   echo "</head>";
   echo "<body>";
@@ -422,9 +431,9 @@ EOF;
   # searchBar
   echo "<h2>Search bar</h2>";
   echo "<form method='GET' id='myForm' >";
-  echo sprintf("<input id='searchBar' name='searchBar' type='text' value='%s' />", ( isset($_GET['searchBar'])? $_GET['searchBar'] : ''));
-  echo "<button onclick='resetForm();' >reset</button>";
+  echo sprintf("<input id='searchBar' name='searchBar' type='text' value='%s' onkeypress='launchForm(event)'  />", ( isset($_GET['searchBar'])? $_GET['searchBar'] : ''));
   echo "</form>";
+  echo "<button onclick='resetForm();' >reset</button>";
 
 
   # myTags

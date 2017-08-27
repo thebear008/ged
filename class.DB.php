@@ -293,7 +293,7 @@ class DB extends SQLite3 {
       <text x="10" y="12" font-size="10" text-anchor="middle" fill="white">|</text>
     </svg>';
 
-    $customAndButton = sprintf($myAndButton, "$slugTag-add-button", "addToSearchInputText('add', '$slugTag')");
+    $customAndButton = sprintf($myAndButton, "$slugTag-add-button", "addToSearchInputText('and', '$slugTag')");
     $customWithoutButton = sprintf($myWithoutButton, "$slugTag-without-button", "addToSearchInputText('without', '$slugTag')");
     $customOrButton = sprintf($myOrButton, "$slugTag-or-button", "addToSearchInputText('or', '$slugTag')");
 
