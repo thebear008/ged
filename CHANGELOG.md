@@ -1,3 +1,7 @@
+# 1.0.4
+
+  - [X] add reset button for search field
+
 # 1.0.3
 
 - [X] search infini !

@@ -403,6 +403,12 @@ EOF;
   }
   <!-- END addToSearchInputText -->
 
+  <!-- resetForm -->
+  function resetForm() {
+    document.getElementById('searchBar').value = '';
+    document.getElementById('myForm').submit();
+  }
+  <!-- END resetForm -->
 
 	</script>", $jsonArray['urlRoot'], $jsonArray['video']['width'], $jsonArray['video']['height'], $jsonArray['urlRoot'], $jsonArray['urlRoot']);
   echo "</head>";
@@ -417,6 +423,7 @@ EOF;
   echo "<h2>Search bar</h2>";
   echo "<form method='GET' id='myForm' >";
   echo sprintf("<input id='searchBar' name='searchBar' type='text' value='%s' />", ( isset($_GET['searchBar'])? $_GET['searchBar'] : ''));
+  echo "<button onclick='resetForm();' >reset</button>";
   echo "</form>";
 
 
