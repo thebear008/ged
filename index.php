@@ -273,31 +273,40 @@ EOF;
   # create tables
   $db->init();
 
-  # drop all tags
-  $db->dropTags();
+  # ##########################################
+  # refreshDb only if $_GET['refreshDb']
 
-  # loadTags
-  if (!isset($jsonArray['tags'])) {
-    echo "Key tags is missing";
-    exit(1);
+  if (isset($_GET['refreshDb'])) { 
+    # drop all tags
+    $db->dropTags();
+
+
+    # loadTags
+    if (!isset($jsonArray['tags'])) {
+      echo "Key tags is missing";
+      exit(1);
+    }
+    $db->loadTags($jsonArray['tags']);
+
+
+    # loadFiles
+    $db->loadFiles($folderPath);
+
+    # cleanTagsFiles
+    $db->cleanTagsFiles();
   }
-  $db->loadTags($jsonArray['tags']);
-
-  # loadFiles
-  $db->loadFiles($folderPath);
-
-  # cleanTagsFiles
-  $db->cleanTagsFiles();
+  # END : refreshDb only if $_GET['refreshDb']
+  # ##########################################
 
   echo "<!doctype html>";
   echo "<html>";
   echo "<head>";
-  echo sprintf("<title>GED v%s</title>", $jsonArray["version"]);
+  echo sprintf("<title>%s v%s</title>", $jsonArray['platformName'],  $jsonArray["version"]);
   echo "<style>";
   echo sprintf("div.firstColumn {width:%s; padding:0; margin: 0; display:inline;} ", $jsonArray["width"]["left"]);
   echo sprintf("div.secondColumn {width:%s; padding:0; margin: 0; display:inline;}", $jsonArray["width"]["center"]);
   echo sprintf("div.thirdColumn {width:%s; padding:0; margin: 0; display:inline;}", $jsonArray["width"]["right"]);
-  echo "div.Column {float:left; }";
+  echo "div.Column {float:left;}";
   echo "div.thirdColumn button {display:block; }";
   echo "</style>";
   echo sprintf("<script type='text/javascript'  >
@@ -422,7 +431,7 @@ EOF;
 	</script>", $jsonArray['urlRoot'], $jsonArray['video']['width'], $jsonArray['video']['height'], $jsonArray['urlRoot'], $jsonArray['urlRoot']);
   echo "</head>";
   echo "<body>";
-  echo sprintf("<header>GED v%s</header>", $jsonArray["version"]);
+  echo sprintf("<header>%s v%s &nbsp;  <a href='?refreshDb=%d'>Refresh DB</a>   </header>", $jsonArray['platformName'], $jsonArray["version"], time());
 
   # firstColumn
   echo "<div class='firstColumn Column'>";
@@ -435,6 +444,9 @@ EOF;
   echo "</form>";
   echo "<button onclick='resetForm();' >reset</button>";
 
+
+  # search Datas without tags
+  echo sprintf("<a href='?searchBar=media-without-tags' >Media without tags</a>");
 
   # myTags
   echo sprintf("<h2>%s</h2>", "Tag listing");
@@ -484,7 +496,7 @@ EOF;
 
     # detect if is not mp4 file
     if (substr($pictureMedia,-3) != "mp4") {
-      echo sprintf("<img id='show-%s' onclick='populateThirdColumn(\"%s\", this, false, false)' height='80px' src='%s%s' />", slugify($pictureMedia), slugify($pictureMedia), $jsonArray['urlRootDatas'], $pictureMedia);
+      echo sprintf("<img id='show-%s' onclick='window.scrollTo(0,0);  populateThirdColumn(\"%s\", this, false, false)' height='80px' src='%s%s' />", slugify($pictureMedia), slugify($pictureMedia), $jsonArray['urlRootDatas'], $pictureMedia);
     } else {
       $mp4File = $pictureMedia;
       foreach ($jsonArray['allowedExtensions'] as $allowedExtension) {
@@ -497,7 +509,7 @@ EOF;
           break;
         }
       }
-      echo sprintf("<img id='show-%s' onclick='populateThirdColumn(\"%s\", this, \"%s%s\", \"%s\")' height='80px' src='%s%s' />", slugify($pictureMedia), slugify($mp4File), $jsonArray['urlRootDatas'],  $mp4File,  slugify($mp4File), $jsonArray['urlRootThumbnails'], $pictureMedia);
+      echo sprintf("<img id='show-%s' onclick='window.scrollTo(0,0); populateThirdColumn(\"%s\", this, \"%s%s\", \"%s\")' height='80px' src='%s%s' />", slugify($pictureMedia), slugify($mp4File), $jsonArray['urlRootDatas'],  $mp4File,  slugify($mp4File), $jsonArray['urlRootThumbnails'], $pictureMedia);
     }
   }
   echo "</ul>";

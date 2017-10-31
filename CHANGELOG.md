@@ -1,3 +1,18 @@
+# TODO
+
+- [ ] open/collapse tags tree
+- [ ] manage txt files into datas
+- [ ] metadata on tags
+- [ ] three scrollable columns
+
+# 1.0.7
+
+- [X] window.scrollTo(0,0) when clicking datas
+- [X] custom title for platform
+- [X] refresh DB only if manual action launched
+- [X] add labels onto tags for checkbox
+- [X] select datas without tags
+
 # 1.0.6
 
 - [X] add default root for xampp (windows)

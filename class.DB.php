@@ -121,7 +121,7 @@ class DB extends SQLite3 {
         # option to add checkBox to tag the current file
         $checkedBoolean = '';
         if (in_array($myResult[0], $arraySlugTags)) { $checkedBoolean = 'checked'; }
-        $string .= sprintf("<li>%s <input %s type='checkbox' value='%s' onclick='linkTagToFile(this, \"%s\")' /></li>", $myResult[0], $checkedBoolean, $myResult[0], $slugFile);
+        $string .= sprintf("<li><label for='my-input-%s'>%s</label> <input %s id='my-input-%s'  type='checkbox' value='%s' onclick='linkTagToFile(this, \"%s\")' /></li>", $myResult[0], $myResult[0], $checkedBoolean, $myResult[0], $myResult[0], $slugFile);
       } elseif ($showSearchButton) {
         # option to add search button 
         $string .= sprintf("<li>%s %s</li>", $myResult[0], $this->getSearchButtons($myResult[0]));
@@ -239,6 +239,19 @@ class DB extends SQLite3 {
    * */
   public function getFilesFromSlugs($tagSlugs) {
     $sql = sprintf("SELECT file_slug from tags_files where tag_slug in (%s)", implode(",", $tagSlugs));
+    $result = $this->query($sql);
+    $fileSlugs = array();
+    while ($myResult = $result->fetchArray()){
+      $fileSlugs[$myResult[0]] = $myResult[0];
+    }
+    return $fileSlugs;
+  }
+
+  /**
+   * @return array fileSlugs
+   * */
+  public function getFilesWithoutTags() {
+    $sql = sprintf("SELECT slug  FROM myFiles WHERE slug not in (SELECT file_slug from tags_files )");
     $result = $this->query($sql);
     $fileSlugs = array();
     while ($myResult = $result->fetchArray()){
