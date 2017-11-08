@@ -140,6 +140,11 @@ class DB extends SQLite3 {
    * @return array
    * */
   public function getTagAndChildren($tag) {
+    # detect all-files
+    # ################
+    if ($tag == "all-files") {
+      return $tag;
+    }
     $return = array();
     $arrayResult = $this->querySingle(sprintf('select slug from myTags where slug = "%s"', slugify($tag)));
     if (empty($arrayResult)) {
@@ -238,7 +243,13 @@ class DB extends SQLite3 {
    * @param array $tagSlugs with '' : 'tag1', 'tag2', ...
    * */
   public function getFilesFromSlugs($tagSlugs) {
-    $sql = sprintf("SELECT file_slug from tags_files where tag_slug in (%s)", implode(",", $tagSlugs));
+    # detect all-files
+    # ################
+    if ($tagSlugs == "all-files") {
+      $sql = sprintf("SELECT slug from myFiles");
+    } else {
+      $sql = sprintf("SELECT file_slug from tags_files where tag_slug in (%s)", implode(",", $tagSlugs));
+    }
     $result = $this->query($sql);
     $fileSlugs = array();
     while ($myResult = $result->fetchArray()){

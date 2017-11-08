@@ -19,7 +19,7 @@ class Search {
    * */
   public function go($search, $basket = False) {
     # case to get all medias without tags
-    if ($search != '' && (substr($search, 0, strlen($search))  == "media-without-tags")) {
+    if ($search != '' && (substr($search, 0, 18)  == "media-without-tags")) {
       return $this->db->getFilesWithoutTags();
     }
     # END : case to get all medias without tags

@@ -3,7 +3,12 @@
 - [ ] open/collapse tags tree
 - [ ] manage txt files into datas
 - [ ] metadata on tags
-- [ ] three scrollable columns
+
+# 1.0.8
+
+- [X] three scrollable columns
+- [X] "all-files" special tag : allowing "all-files without xxx"
+- [X] Redefined "media without tags" link
 
 # 1.0.7
 

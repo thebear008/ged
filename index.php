@@ -308,6 +308,11 @@ EOF;
   echo sprintf("div.thirdColumn {width:%s; padding:0; margin: 0; display:inline;}", $jsonArray["width"]["right"]);
   echo "div.Column {float:left;}";
   echo "div.thirdColumn button {display:block; }";
+  echo "span.all-media-link { color:green;  } ";
+  echo "span.all-media-link:hover { cursor:pointer; color: black; } ";
+  echo "svg:hover { cursor:pointer;  } ";
+  echo "body, html { height:100%; overflow: hidden; margin:0 ; padding:0; } ";
+  echo "div.Column { height: 95%; overflow-y: auto; overflow-x:hidden;  }";
   echo "</style>";
   echo sprintf("<script type='text/javascript'  >
 
@@ -446,10 +451,11 @@ EOF;
 
 
   # search Datas without tags
-  echo sprintf("<a href='?searchBar=media-without-tags' >Media without tags</a>");
+  echo sprintf("<span class='all-media-link' onclick='addToSearchInputText(\"and\", \"media-without-tags\")' >Media without tags</span>");
 
   # myTags
   echo sprintf("<h2>%s</h2>", "Tag listing");
+  echo "<span class='all-media-link' onclick='addToSearchInputText(\"and\", \"all-files\")' >All medias</span>";
   echo $db->showTagTree(False, False, False, False, $showSearchButton = True);
 
   # tags_files

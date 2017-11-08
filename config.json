@@ -1,7 +1,7 @@
 {
   "platformName":  "myGED",
-  "version":  "1.0.7",
-  "debug": "true", 
+  "version":  "1.0.8",
+  "debug": "false", 
   "width": {
     "left": "20%",
     "center": "50%",
