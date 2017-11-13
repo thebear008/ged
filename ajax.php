@@ -15,7 +15,9 @@ $db = new DB(sprintf('%s%s%s', $folderPath, DIRECTORY_SEPARATOR, '.ged.db'));
 # populateThirdColumn
 if (isset($_POST['slug'])) {
   $arrayTags = $db->getTagsFromFile($_POST['slug']);
+  echo "<div class='tag-tree-third-column'>";
   echo $db->showTagTree(False, True, $_POST['slug'], $arrayTags);
+  echo "</div>";
 }
 
 # linkTagToFile

@@ -3,6 +3,14 @@
 - [ ] open/collapse tags tree
 - [ ] manage txt files into datas
 - [ ] metadata on tags
+- [ ] expand tags
+
+# 1.0.9
+
+- [X] show/hide titles within config file
+- [X] move "header" markup into first column
+- [X] first column split into two rows (height into config file)
+- [X] third column split into two rows (height into config file)
 
 # 1.0.8
 

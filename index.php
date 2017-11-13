@@ -313,6 +313,9 @@ EOF;
   echo "svg:hover { cursor:pointer;  } ";
   echo "body, html { height:100%; overflow: hidden; margin:0 ; padding:0; } ";
   echo "div.Column { height: 95%; overflow-y: auto; overflow-x:hidden;  }";
+  echo sprintf("div.tag-tree-first-column { height: %s; overflow-y: auto; overflow-x:hidden; padding : 0; margin:0;} ", $jsonArray['height']['tagTreeFirstColumn']);
+  echo sprintf("div.tag-tree-third-column { height: %s; overflow-y: auto; overflow-x:hidden; padding : 0; margin:0;} ", $jsonArray['height']['tagTreeThirdColumn']);
+  echo "ul { margin: 0; padding-left: 15px } ";
   echo "</style>";
   echo sprintf("<script type='text/javascript'  >
 
@@ -436,14 +439,18 @@ EOF;
 	</script>", $jsonArray['urlRoot'], $jsonArray['video']['width'], $jsonArray['video']['height'], $jsonArray['urlRoot'], $jsonArray['urlRoot']);
   echo "</head>";
   echo "<body>";
-  echo sprintf("<header>%s v%s &nbsp;  <a href='?refreshDb=%d'>Refresh DB</a>   </header>", $jsonArray['platformName'], $jsonArray["version"], time());
 
   # firstColumn
   echo "<div class='firstColumn Column'>";
+  echo sprintf("<header>%s v%s &nbsp;  <a href='?refreshDb=%d'>Refresh DB</a>   </header>", $jsonArray['platformName'], $jsonArray["version"], time());
 
 
+  $hideTitles = "";
+  if (isset($jsonArray['hideTitles']) && $jsonArray['hideTitles'] == "true" ) {
+    $hideTitles = "display:none;";
+  }
   # searchBar
-  echo "<h2>Search bar</h2>";
+  echo "<h2 style='$hideTitles' >Search bar</h2>";
   echo "<form method='GET' id='myForm' >";
   echo sprintf("<input id='searchBar' name='searchBar' type='text' value='%s' onkeypress='launchForm(event)'  />", ( isset($_GET['searchBar'])? $_GET['searchBar'] : ''));
   echo "</form>";
@@ -453,10 +460,14 @@ EOF;
   # search Datas without tags
   echo sprintf("<span class='all-media-link' onclick='addToSearchInputText(\"and\", \"media-without-tags\")' >Media without tags</span>");
 
+  echo "<br/>";
+
   # myTags
-  echo sprintf("<h2>%s</h2>", "Tag listing");
+  echo "<h2 style='$hideTitles' >Tag listing</h2>";
   echo "<span class='all-media-link' onclick='addToSearchInputText(\"and\", \"all-files\")' >All medias</span>";
+  echo "<div class='tag-tree-first-column'>";
   echo $db->showTagTree(False, False, False, False, $showSearchButton = True);
+  echo "</div>";
 
   # tags_files
   if ($jsonArray["debug"] == "true") {
@@ -485,7 +496,7 @@ EOF;
   echo "<div class='secondColumn Column'>";
 
   # myFiles
-  echo sprintf("<h2>%s</h2>", "Media listing");
+  echo "<h2 style='$hideTitles' >Media listing</h2>";
   $result = $db->query("select label from myFiles order by label");
 
   # filter searchBar
@@ -526,7 +537,7 @@ EOF;
 
   # thirdColumn
   echo "<div class='thirdColumn Column'>";
-  echo "<h2>Show data</h2>";
+  echo "<h2 style='$hideTitles' >Show data</h2>";
   echo "<div id='myContent'>&nbsp;</div>";
   # END : thirdColumn
   echo "</div>";

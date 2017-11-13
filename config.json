@@ -1,7 +1,12 @@
 {
   "platformName":  "myGED",
-  "version":  "1.0.8",
+  "version":  "1.0.9",
   "debug": "false", 
+  "hideTitles": "true", 
+  "height": {
+    "tagTreeFirstColumn": "80%",
+    "tagTreeThirdColumn": "250px"
+  },
   "width": {
     "left": "20%",
     "center": "50%",
