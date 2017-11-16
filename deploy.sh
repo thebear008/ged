@@ -5,7 +5,7 @@
 case "$1" in
   "local-linux")
     echo "Deploying code locally on Linux"
-    sudo cp -v *.php *.json /var/www/html/ged/
+    sudo cp -v *.php *.json *.js /var/www/html/ged/
     sudo cp -rv /home/lonclegr/Images/ged/* /var/www/html/ged/datas/
     sudo chown -R apache. /var/www/html/ged
   ;;

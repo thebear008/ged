@@ -1,9 +1,16 @@
 # TODO
 
-- [ ] open/collapse tags tree
 - [ ] manage txt files into datas
 - [ ] metadata on tags
 - [ ] expand tags
+- [ ] open/collapse tags tree
+
+# 1.0.10
+
+- [X] remove UL CSS modifications
+- [X] CSS class to tags with children
+- [X] add jQuery library
+- [X] toggle tags with children (first column)
 
 # 1.0.9
 

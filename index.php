@@ -302,6 +302,10 @@ EOF;
   echo "<html>";
   echo "<head>";
   echo sprintf("<title>%s v%s</title>", $jsonArray['platformName'],  $jsonArray["version"]);
+
+  ##############
+  # CSS embedded
+  ##############
   echo "<style>";
   echo sprintf("div.firstColumn {width:%s; padding:0; margin: 0; display:inline;} ", $jsonArray["width"]["left"]);
   echo sprintf("div.secondColumn {width:%s; padding:0; margin: 0; display:inline;}", $jsonArray["width"]["center"]);
@@ -315,9 +319,26 @@ EOF;
   echo "div.Column { height: 95%; overflow-y: auto; overflow-x:hidden;  }";
   echo sprintf("div.tag-tree-first-column { height: %s; overflow-y: auto; overflow-x:hidden; padding : 0; margin:0;} ", $jsonArray['height']['tagTreeFirstColumn']);
   echo sprintf("div.tag-tree-third-column { height: %s; overflow-y: auto; overflow-x:hidden; padding : 0; margin:0;} ", $jsonArray['height']['tagTreeThirdColumn']);
-  echo "ul { margin: 0; padding-left: 15px } ";
+  echo ".tag-with-children { font-weight: bold;  } ";
+  echo ".tag-with-children:hover { cursor: pointer;  } ";
   echo "</style>";
+  ####################
+  # END : CSS embedded
+  ####################
+
+  echo sprintf("<script type='text/javascript' src='jquery-3.2.1.min.js' ></script>");
+
   echo sprintf("<script type='text/javascript'  >
+
+  jQuery(document).ready(function() {
+    // hide second level of tree tags
+    jQuery('li.tag-with-children').siblings('ul').toggle();
+
+    // onclick function
+    jQuery('li.tag-with-children').click(function() {
+       jQuery(this).next('ul').toggle();
+    })
+  });
 
   function populateThirdColumn(mySlug, myImgObject, mp4Name, mySlugMp4) {
     // reset third column

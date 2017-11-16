@@ -117,16 +117,23 @@ class DB extends SQLite3 {
       $result = $this->query("select slug from myTags where top_tag is null order by tag");
     } 
     while ($myResult = $result->fetchArray()){
+      # add CSS class to tag with children
+      $classTagWithChildren = "";
+      if ($this->hasChild($myResult[0])) {
+        $classTagWithChildren = "tag-with-children";
+      }
+
+
       if ($checkBoxFlag) {
         # option to add checkBox to tag the current file
         $checkedBoolean = '';
         if (in_array($myResult[0], $arraySlugTags)) { $checkedBoolean = 'checked'; }
-        $string .= sprintf("<li><label for='my-input-%s'>%s</label> <input %s id='my-input-%s'  type='checkbox' value='%s' onclick='linkTagToFile(this, \"%s\")' /></li>", $myResult[0], $myResult[0], $checkedBoolean, $myResult[0], $myResult[0], $slugFile);
+        $string .= sprintf("<li class='%s' ><label for='my-input-%s'>%s</label> <input %s id='my-input-%s'  type='checkbox' value='%s' onclick='linkTagToFile(this, \"%s\")' /></li>", $classTagWithChildren, $myResult[0], $myResult[0], $checkedBoolean, $myResult[0], $myResult[0], $slugFile);
       } elseif ($showSearchButton) {
         # option to add search button 
-        $string .= sprintf("<li>%s %s</li>", $myResult[0], $this->getSearchButtons($myResult[0]));
+        $string .= sprintf("<li class='%s' >%s %s</li>", $classTagWithChildren, $myResult[0], $this->getSearchButtons($myResult[0]));
       } else {
-        $string .= sprintf("<li>%s</li>", $myResult[0]);
+        $string .= sprintf("<li class='%s' >%s</li>", $classTagWithChildren, $myResult[0]);
       }
       $string .= $this->showTagTree($myResult[0], $checkBoxFlag, $slugFile, $arraySlugTags, $showSearchButton);
     }
@@ -166,6 +173,14 @@ class DB extends SQLite3 {
     return $return;
   }
 
+  /**
+   * @param $tag string
+   * @return boolean
+   * */
+  public function hasChild($tag) {
+    $result = $this->query(sprintf("select slug from myTags where top_tag = '%s'", $tag));
+    return ($result->fetchArray());
+  }
 
   /**
    * @param $tag string
