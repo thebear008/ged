@@ -298,6 +298,14 @@ EOF;
   # END : refreshDb only if $_GET['refreshDb']
   # ##########################################
 
+  # ################################
+  # cleanDb only if $_GET['cleanDb']
+  if (isset($_GET['cleanDb'])) {
+    $db->cleanDb();
+  }
+  # END : cleanDb only if $_GET['cleanDb']
+  # #######################################
+
   echo "<!doctype html>";
   echo "<html>";
   echo "<head>";
@@ -360,6 +368,15 @@ EOF;
                 var myDiv = document.createElement('div');
                 myDiv.innerHTML = this.responseText;
                 document.getElementById(\"myContent\").appendChild(myDiv);
+
+
+                <!-- toggle tree -->
+                jQuery('#myContent li.tag-with-children').siblings('ul').toggle();
+                // onclick function
+                jQuery('#myContent li.tag-with-children').click(function() {
+                   jQuery(this).next('ul').toggle();
+                })
+                <!-- END toggle tree -->
               }
           }
       };
@@ -402,14 +419,23 @@ EOF;
 							var myDiv = document.createElement('div');
 							//myParagraph.innerHTML = JSON.parse(this.responseText);
 							myDiv.innerHTML = this.responseText;
-							document.getElementById(\"myContent\").appendChild(myDiv);
+              document.getElementById(\"myContent\").appendChild(myDiv);
+
+              <!-- toggle tree -->
+              jQuery('#myContent li.tag-with-children').siblings('ul').toggle();
+              // onclick function
+              jQuery('#myContent li.tag-with-children').click(function() {
+                 jQuery(this).next('ul').toggle();
+              })
+              <!-- END toggle tree -->
 						}
 				}
 		};
 
 		req.open('POST', '%sajax.php', true);
 		req.setRequestHeader(\"Content-type\", \"application/x-www-form-urlencoded\");
-		req.send('slug=' + mySlug);
+    req.send('slug=' + mySlug);
+
 	}
 
 
@@ -463,7 +489,7 @@ EOF;
 
   # firstColumn
   echo "<div class='firstColumn Column'>";
-  echo sprintf("<header>%s v%s &nbsp;  <a href='?refreshDb=%d'>Refresh DB</a>   </header>", $jsonArray['platformName'], $jsonArray["version"], time());
+  echo sprintf("<header>%s v%s &nbsp;  <a href='?refreshDb=%d'>Refresh DB</a> <a href='?cleanDb=%d'>Clean DB</a>   </header>", $jsonArray['platformName'], $jsonArray["version"], time(), time());
 
 
   $hideTitles = "";

@@ -2,8 +2,12 @@
 
 - [ ] manage txt files into datas
 - [ ] metadata on tags
-- [ ] expand tags
-- [ ] open/collapse tags tree
+
+# 1.1.0
+
+- [X] enable links between media and leaf-tag only
+- [X] toggle tags with children (third column)
+- [X] add "clean DB" to delete links between media and non-leaf-tag
 
 # 1.0.10
 

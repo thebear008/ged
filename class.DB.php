@@ -42,6 +42,14 @@ class DB extends SQLite3 {
 
   /**
    * @return void
+   * delete tags_files records if files are linked to non-leaf-tag
+   * */
+  public function cleanDb() {
+    $this->exec("DELETE FROM tags_files where tag_slug in (select top_tag from myTags where top_tag is not null)");
+  }
+
+  /**
+   * @return void
    **/
   public function dropTags() {
     $this->exec('DELETE FROM myTags');
@@ -119,8 +127,10 @@ class DB extends SQLite3 {
     while ($myResult = $result->fetchArray()){
       # add CSS class to tag with children
       $classTagWithChildren = "";
+      $hasChild = False;
       if ($this->hasChild($myResult[0])) {
         $classTagWithChildren = "tag-with-children";
+        $hasChild = True;
       }
 
 
@@ -128,7 +138,13 @@ class DB extends SQLite3 {
         # option to add checkBox to tag the current file
         $checkedBoolean = '';
         if (in_array($myResult[0], $arraySlugTags)) { $checkedBoolean = 'checked'; }
-        $string .= sprintf("<li class='%s' ><label for='my-input-%s'>%s</label> <input %s id='my-input-%s'  type='checkbox' value='%s' onclick='linkTagToFile(this, \"%s\")' /></li>", $classTagWithChildren, $myResult[0], $myResult[0], $checkedBoolean, $myResult[0], $myResult[0], $slugFile);
+
+        # tags with children cannot be linked to media
+        if ($hasChild) {
+          $string .= sprintf("<li class='%s' >%s</li>", $classTagWithChildren, $myResult[0]);
+        } else {
+          $string .= sprintf("<li class='%s' ><label for='my-input-%s'>%s</label> <input %s id='my-input-%s'  type='checkbox' value='%s' onclick='linkTagToFile(this, \"%s\")' /></li>", $classTagWithChildren, $myResult[0], $myResult[0], $checkedBoolean, $myResult[0], $myResult[0], $slugFile);
+        }
       } elseif ($showSearchButton) {
         # option to add search button 
         $string .= sprintf("<li class='%s' >%s %s</li>", $classTagWithChildren, $myResult[0], $this->getSearchButtons($myResult[0]));
