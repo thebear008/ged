@@ -3,6 +3,11 @@
 - [ ] manage txt files into datas
 - [ ] metadata on tags
 
+# 1.1.1
+
+- [X] first column open/close tree link
+- [X] third column open/close tree link
+
 # 1.1.0
 
 - [X] enable links between media and leaf-tag only

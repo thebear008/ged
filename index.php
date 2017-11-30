@@ -329,6 +329,8 @@ EOF;
   echo sprintf("div.tag-tree-third-column { height: %s; overflow-y: auto; overflow-x:hidden; padding : 0; margin:0;} ", $jsonArray['height']['tagTreeThirdColumn']);
   echo ".tag-with-children { font-weight: bold;  } ";
   echo ".tag-with-children:hover { cursor: pointer;  } ";
+  echo ".open-close-tree:hover { cursor: pointer;   }";
+  echo ".open-close-tree { color: green;   }";
   echo "</style>";
   ####################
   # END : CSS embedded
@@ -377,6 +379,12 @@ EOF;
                    jQuery(this).next('ul').toggle();
                 })
                 <!-- END toggle tree -->
+
+                <!-- open/close tree -->
+                jQuery('.open-close-tree').clone().insertBefore('.tag-tree-third-column')
+                jQuery('#myContent .open-close-tree').prop('onclick',null).off('click')
+                jQuery('#myContent .open-close-tree').on('click', function() { openCloseTree('tag-tree-third-column')  } )
+                <!-- END open/close tree -->
               }
           }
       };
@@ -428,6 +436,13 @@ EOF;
                  jQuery(this).next('ul').toggle();
               })
               <!-- END toggle tree -->
+
+
+                <!-- open/close tree -->
+                jQuery('.open-close-tree').clone().insertBefore('.tag-tree-third-column')
+                jQuery('#myContent .open-close-tree').prop('onclick',null).off('click')
+                jQuery('#myContent .open-close-tree').on('click', function() { openCloseTree('tag-tree-third-column')  } )
+                <!-- END open/close tree -->
 						}
 				}
 		};
@@ -483,6 +498,20 @@ EOF;
   }
   <!-- END launchForm -->
 
+  <!-- openCloseTree -->
+  <!-- we don't want to detect if tree is open or closed so we use one variable to get memory and toggle action -->
+  var memoryTree = 1;
+  function openCloseTree(classOfColumn) {
+    if (memoryTree == 1) {
+      jQuery('div.'+ classOfColumn  +' ul ul').show()
+      memoryTree = 0;
+    } else {
+      jQuery('div.'+ classOfColumn  +' ul ul').hide()
+      memoryTree = 1;
+    }
+  }
+  <!-- END openCloseTree -->
+
 	</script>", $jsonArray['urlRoot'], $jsonArray['video']['width'], $jsonArray['video']['height'], $jsonArray['urlRoot'], $jsonArray['urlRoot']);
   echo "</head>";
   echo "<body>";
@@ -512,7 +541,10 @@ EOF;
   # myTags
   echo "<h2 style='$hideTitles' >Tag listing</h2>";
   echo "<span class='all-media-link' onclick='addToSearchInputText(\"and\", \"all-files\")' >All medias</span>";
+  
   echo "<div class='tag-tree-first-column'>";
+  # link to open/close tags tree
+  echo "<span class='open-close-tree' onclick='openCloseTree(\"tag-tree-first-column\")'  >Open/Close tree</span>";
   echo $db->showTagTree(False, False, False, False, $showSearchButton = True);
   echo "</div>";
 
