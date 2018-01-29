@@ -4,10 +4,20 @@ class DB extends SQLite3 {
   /**
    * @return void
    **/
-  public function init() {
+  public function init($specialTags = false) {
     $this->exec('CREATE TABLE if not exists myFiles (label STRING, slug STRING PRIMARY KEY)');
     $this->exec('CREATE TABLE if not exists myTags (tag STRING, slug STRING PRIMARY KEY, top_tag STRING)');
     $this->exec('CREATE TABLE if not exists tags_files (file_slug STRING, tag_slug STRING)');
+
+    // create specialTags if don't exist
+    try {
+      foreach ($specialTags as $tag) {
+        $this->addTag($tag);
+      }
+    } catch (Exception $e) {
+     // no prob if already exist 
+    }
+    
   }
 
   /**
@@ -63,7 +73,7 @@ class DB extends SQLite3 {
   public function addTag($myTag, $myTagParent = False) {
     $arrayResult = $this->querySingle(sprintf('select * from myTags where slug = "%s"', slugify($myTag)));
     if (!empty($arrayResult)) {
-      die(sprintf("ERROR : tag '%s' is already present into database.", $myTag));
+      throw new Exception(sprintf("ERROR : tag '%s' is already present into database.", $myTag));
     } else {
       if ($myTagParent) {
         # create tag with parent
@@ -292,12 +302,24 @@ class DB extends SQLite3 {
   /**
    * @return array fileSlugs
    * */
-  public function getFilesWithoutTags() {
+  public function getFilesWithoutTags($pictures_only = '', $videos_only = '') {
     $sql = sprintf("SELECT slug  FROM myFiles WHERE slug not in (SELECT file_slug from tags_files )");
     $result = $this->query($sql);
     $fileSlugs = array();
     while ($myResult = $result->fetchArray()){
-      $fileSlugs[$myResult[0]] = $myResult[0];
+      if ($pictures_only === True ) {
+        if (substr($myResult[0], -3) != 'mp4') {
+          $fileSlugs[$myResult[0]] = $myResult[0];
+        }
+      } else {
+        if ($videos_only === True) {
+          if (substr($myResult[0], -3) == 'mp4') {
+            $fileSlugs[$myResult[0]] = $myResult[0];
+          }
+        } else {
+          $fileSlugs[$myResult[0]] = $myResult[0];
+        }
+      }
     }
     return $fileSlugs;
   }
@@ -353,6 +375,73 @@ class DB extends SQLite3 {
     $customOrButton = sprintf($myOrButton, "$slugTag-or-button", "addToSearchInputText('or', '$slugTag')");
 
     return $customAndButton . $customWithoutButton . $customOrButton;
+  }
+
+  /**
+   * @return array of orphan videos (no thumbnails)
+   **/
+  public function getOrphanVideos($folderPath, $thumbnailsDirectory, $allowedExtensions) {
+    $listFolder = scandir($folderPath);
+
+    $result = array();
+    foreach ($listFolder as $content) {
+      # filter hidden content
+      if (substr($content, 0, 1) != ".") {
+        if (!is_dir($folderPath . DIRECTORY_SEPARATOR . $content)) {
+          $my_explode = explode('.', $content);
+          if (end($my_explode) == "mp4") {
+            # test if thumbnail exists
+            $proof_of_existence = false;
+            foreach ($allowedExtensions as $allowedExtension) {
+              $myExplode = explode(".", $content);
+              array_pop($myExplode);
+              $myExplode[] = $allowedExtension;
+              $filename = implode(".", $myExplode);
+              if (file_exists($folderPath . DIRECTORY_SEPARATOR . $thumbnailsDirectory . DIRECTORY_SEPARATOR . $filename)) {
+                $proof_of_existence = true;
+              }
+            }
+
+            if ($proof_of_existence == false) {
+              $result[$content] = $content;
+            }
+          }
+        }
+      }
+    }
+    return $result;
+  }
+
+
+  /**
+   * @return array of orphan thumbnails (no videos)
+   **/
+  public function getOrphanThumbnails($folderPath, $thumbnailsDirectory, $urlRootThumbnails) {
+    $listFolder = scandir($folderPath . DIRECTORY_SEPARATOR . $thumbnailsDirectory);
+
+    $result = array();
+    foreach ($listFolder as $content) {
+      # filter hidden content
+      if (substr($content, 0, 1) != ".") {
+        if (!is_dir($folderPath . DIRECTORY_SEPARATOR . $content)) {
+          $my_explode = explode('.', $content);
+          # test if video exists
+          $proof_of_existence = false;
+          $myExplode = explode(".", $content);
+          array_pop($myExplode);
+          $myExplode[] = "mp4";
+          $filename = implode(".", $myExplode);
+          if (file_exists($folderPath . DIRECTORY_SEPARATOR . $filename)) {
+            $proof_of_existence = true;
+          }
+
+          if ($proof_of_existence == false) {
+            $result[$content] = $content;
+          }
+        }
+      }
+    }
+    return $result;
   }
 }
 

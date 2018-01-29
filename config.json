@@ -1,6 +1,6 @@
 {
   "platformName":  "myGED",
-  "version":  "1.1.0",
+  "version":  "1.1.1",
   "debug": "false", 
   "hideTitles": "true", 
   "height": {
@@ -15,6 +15,13 @@
   "video": {
     "width": "320",
     "height": "240"
+  },
+  "pictureMiddle": {
+    "height": "80px"
+  },
+  "pictureRight": {
+    "maxHeight": "300px",
+    "maxWidth": "300px"
   },
   "allowedExtensions": [
     "jpg",
@@ -31,6 +38,10 @@
   "urlRoot": "/ged/",
   "urlRootDatas": "/ged/datas/",
   "urlRootThumbnails": "/ged/datas/thumbnails/",
+  "specialTags": {
+    "pictures": "pictures",
+    "videos": "videos"
+  },
   "tags": {
     "human": {
       "man": null,
@@ -41,6 +52,10 @@
       "horse": null,
       "bear": null
     },
+    "pictures": {
+      "landscape": null
+    },
+    "videos": null,
     "vehicule": {
       "car": null,
       "motorcycle": {

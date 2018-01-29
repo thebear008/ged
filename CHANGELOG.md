@@ -3,6 +3,16 @@
 - [ ] manage txt files into datas
 - [ ] metadata on tags
 
+# 1.1.1
+
+- [X] tag "pictures" pictures without any tag
+- [X] tag "videos" videos without any tag
+- [X] config maxWidth for right column picture
+- [X] config maxHeight for right column picture
+- [X] config height for middle column pictures
+- [X] detect videos without thumbnails
+- [X] detect thumbnails without videos
+
 # 1.1.0
 
 - [X] enable links between media and leaf-tag only

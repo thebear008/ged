@@ -271,7 +271,7 @@ EOF;
   }
   
   # create tables
-  $db->init();
+  $db->init(array($jsonArray['specialTags']['pictures'], $jsonArray['specialTags']['videos']));
 
   # ##########################################
   # refreshDb only if $_GET['refreshDb']
@@ -407,7 +407,8 @@ EOF;
     } else {
       var myNewImg = new Image();
       myNewImg.src = myImgObject.src;
-      myNewImg.style.width = '100%%';
+      myNewImg.style.maxWidth = '%s';
+      myNewImg.style.maxHeight = '%s';
       document.getElementById(\"myContent\").appendChild(myNewImg);
     }
 		req = new XMLHttpRequest();
@@ -483,13 +484,17 @@ EOF;
   }
   <!-- END launchForm -->
 
-	</script>", $jsonArray['urlRoot'], $jsonArray['video']['width'], $jsonArray['video']['height'], $jsonArray['urlRoot'], $jsonArray['urlRoot']);
+	</script>", $jsonArray['urlRoot'], $jsonArray['video']['width'], $jsonArray['video']['height'],$jsonArray['pictureRight']['maxWidth'], $jsonArray['pictureRight']['maxHeight'], $jsonArray['urlRoot'], $jsonArray['urlRoot']);
   echo "</head>";
   echo "<body>";
 
   # firstColumn
   echo "<div class='firstColumn Column'>";
-  echo sprintf("<header>%s v%s &nbsp;  <a href='?refreshDb=%d'>Refresh DB</a> <a href='?cleanDb=%d'>Clean DB</a>   </header>", $jsonArray['platformName'], $jsonArray["version"], time(), time());
+  echo sprintf("<header>%s v%s &nbsp;  
+    <a href='?refreshDb=%d'>Refresh DB</a>
+    <a href='?cleanDb=%d'>Clean DB</a>
+    <a href='issue.php'>Issues</a>
+  </header>", $jsonArray['platformName'], $jsonArray["version"], time(), time());
 
 
   $hideTitles = "";
@@ -560,7 +565,7 @@ EOF;
 
     # detect if is not mp4 file
     if (substr($pictureMedia,-3) != "mp4") {
-      echo sprintf("<img id='show-%s' onclick='window.scrollTo(0,0);  populateThirdColumn(\"%s\", this, false, false)' height='80px' src='%s%s' />", slugify($pictureMedia), slugify($pictureMedia), $jsonArray['urlRootDatas'], $pictureMedia);
+      echo sprintf("<img id='show-%s' onclick='window.scrollTo(0,0);  populateThirdColumn(\"%s\", this, false, false)' height='%s' src='%s%s' />", slugify($pictureMedia), slugify($pictureMedia), $jsonArray['pictureMiddle']['height'], $jsonArray['urlRootDatas'], $pictureMedia);
     } else {
       $mp4File = $pictureMedia;
       foreach ($jsonArray['allowedExtensions'] as $allowedExtension) {
@@ -573,7 +578,7 @@ EOF;
           break;
         }
       }
-      echo sprintf("<img id='show-%s' onclick='window.scrollTo(0,0); populateThirdColumn(\"%s\", this, \"%s%s\", \"%s\")' height='80px' src='%s%s' />", slugify($pictureMedia), slugify($mp4File), $jsonArray['urlRootDatas'],  $mp4File,  slugify($mp4File), $jsonArray['urlRootThumbnails'], $pictureMedia);
+      echo sprintf("<img id='show-%s' onclick='window.scrollTo(0,0); populateThirdColumn(\"%s\", this, \"%s%s\", \"%s\")' height='%s' src='%s%s' />", slugify($pictureMedia), slugify($mp4File), $jsonArray['urlRootDatas'],  $mp4File,  slugify($mp4File), $jsonArray['pictureMiddle']['height'], $jsonArray['urlRootThumbnails'], $pictureMedia);
     }
   }
   echo "</ul>";
