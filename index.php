@@ -288,12 +288,34 @@ EOF;
     }
     $db->loadTags($jsonArray['tags']);
 
-
     # loadFiles
     $db->loadFiles($folderPath);
 
     # cleanTagsFiles
     $db->cleanTagsFiles();
+
+    #########################
+    # tagPicture management #
+    #########################
+    $pictures_without_tag = $db->getFilesWithoutTags(True);
+    foreach ($pictures_without_tag as $picture) {
+      $db->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $picture, $jsonArray['specialTags']['pictures']));
+    }
+    ###############################
+    # END : tagPicture management #
+    ###############################
+
+    #########################
+    # tagVideo management #
+    #########################
+    $videos_without_tag = $db->getFilesWithoutTags(False, True);
+    foreach ($videos_without_tag as $video) {
+      $db->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $video, $jsonArray['specialTags']['videos']));
+    }
+    ###############################
+    # END : tagVideo management #
+    ###############################
+
   }
   # END : refreshDb only if $_GET['refreshDb']
   # ##########################################
@@ -319,6 +341,7 @@ EOF;
   echo sprintf("div.secondColumn {width:%s; padding:0; margin: 0; display:inline;}", $jsonArray["width"]["center"]);
   echo sprintf("div.thirdColumn {width:%s; padding:0; margin: 0; display:inline;}", $jsonArray["width"]["right"]);
   echo "div.Column {float:left;}";
+  echo "div.secondColumn img { padding-right:4px;  }";
   echo "div.thirdColumn button {display:block; }";
   echo "span.all-media-link { color:green;  } ";
   echo "span.all-media-link:hover { cursor:pointer; color: black; } ";
@@ -592,7 +615,6 @@ EOF;
   } else {
     $myFileLabels = $db->getAllFileLabels();
   }
-  echo "<ul>";
   foreach ($myFileLabels as $pictureMedia) {
 
     # detect if is not mp4 file
@@ -613,7 +635,6 @@ EOF;
       echo sprintf("<img id='show-%s' onclick='window.scrollTo(0,0); populateThirdColumn(\"%s\", this, \"%s%s\", \"%s\")' height='%s' src='%s%s' />", slugify($pictureMedia), slugify($mp4File), $jsonArray['urlRootDatas'],  $mp4File,  slugify($mp4File), $jsonArray['pictureMiddle']['height'], $jsonArray['urlRootThumbnails'], $pictureMedia);
     }
   }
-  echo "</ul>";
 
 
   # END : secondColumn

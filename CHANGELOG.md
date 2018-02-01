@@ -3,6 +3,12 @@
 - [ ] manage txt files into datas
 - [ ] metadata on tags
 
+# 1.1.3
+
+- [X] add right padding to second column pictures
+- [X] remove useless ` <ul> ` 
+- [X] auto tag pictures and videos when refreshing db
+
 # 1.1.2
 
 - [X] tag "pictures" pictures without any tag
