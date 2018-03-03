@@ -3,6 +3,7 @@ session_start();
 
 include('class.DB.php');
 include('class.Search.php');
+include('class.Log.php');
 
 function slugify($text)
 {
@@ -48,6 +49,13 @@ if (JSON_ERROR_NONE != json_last_error()) {
   exit(1);
 }
 
+# set time limit 
+set_time_limit((isset($jsonArray['set_time_limit']) ? $jsonArray['set_time_limit']: 0));
+
+# log if debug == true
+$log = new Log((isset($jsonArray['log_file']) ? $jsonArray['log_file'] : 'application.log'), ($jsonArray["debug"] == "true"));
+$log->write("Log object created.");
+
 # set mediaDirectory if into GET
 if (isset($_GET['mediaDirectory'])) {
   $_SESSION['configDirectory'] = $_GET['mediaDirectory'];
@@ -69,6 +77,7 @@ if (!isset($_SESSION['configDirectory'])) {
   }
   echo "</ul>";
 } else {
+  $log->write("configDirectory loaded from SESSION.");
   $folderPath = $_SESSION['configDirectory'];
 }
 
@@ -76,15 +85,19 @@ if (!isset($folderPath)) {
   die('Please choose your data directory');
 }
 
+$log->write(sprintf('Loading DB : %s%s%s', $folderPath, DIRECTORY_SEPARATOR, '.ged.db'));
 $db = new DB(sprintf('%s%s%s', $folderPath, DIRECTORY_SEPARATOR, '.ged.db'));
 # if not $db then error
 if (!$db) {
   echo sprintf("Unable to create DB : %s%s%s",  $folderPath, DIRECTORY_SEPARATOR, '.ged.db');
   exit(1);
 }
+# add logger to DB
+$db->setLogger($log);
 
 # create tables
-$db->init(array($jsonArray['specialTags']['pictures'], $jsonArray['specialTags']['videos']));
+$log->write(sprintf('Init DB with tag picture = %s and video = %s', $jsonArray['specialTags']['pictures'], $jsonArray['specialTags']['videos']));
+$db->init($jsonArray['specialTags']);
 
 
 echo "<!doctype html>";
@@ -122,8 +135,10 @@ echo sprintf("<script type='text/javascript' src='jquery-3.2.1.min.js' ></script
 # tagPicture management #
 #########################
 if (isset($_GET['tagPicture'])) {
+  $log->write("Tagging pictures without tag");
   $pictures_without_tag = $db->getFilesWithoutTags(True);
   foreach ($pictures_without_tag as $picture) {
+    $log->write(sprintf("Tagging %s for picture %s", $jsonArray['specialTags']['pictures'], $picture));
     $db->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $picture, $jsonArray['specialTags']['pictures']));
   }
 }
@@ -135,8 +150,10 @@ if (isset($_GET['tagPicture'])) {
 # tagVideo management #
 #########################
 if (isset($_GET['tagVideo'])) {
+  $log->write("Tagging videos without tag");
   $videos_without_tag = $db->getFilesWithoutTags(False, True);
   foreach ($videos_without_tag as $video) {
+    $log->write(sprintf("Tagging %s for video %s", $jsonArray['specialTags']['videos'], $video));
     $db->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $video, $jsonArray['specialTags']['videos']));
   }
 }

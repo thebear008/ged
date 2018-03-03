@@ -6,10 +6,25 @@ class Search {
   private $db = False;
 
   /**
+   * @var $log Log object
+   * */
+  private $log = False;
+
+  /**
    * @param $db DB object
    * */
-  public function __construct($db) {
+  public function __construct($db, $log) {
     $this->db = $db;
+    $this->log = $log;
+  }
+
+  /**
+   * @return void
+   * @param string
+   * write log with special prefix
+   **/
+  public function log($string) {
+    $this->log->write($string, 'Search');
   }
 
   /**
@@ -18,6 +33,7 @@ class Search {
    * @return array (fileSlugs)
    * */
   public function go($search, $basket = False) {
+    $this->log(sprintf("Go with %s and basket %s", $search, (is_array($basket) ? implode(",", $basket) : $basket)));
     # case to get all medias without tags
     if ($search != '' && (substr($search, 0, 18)  == "media-without-tags")) {
       return $this->db->getFilesWithoutTags();

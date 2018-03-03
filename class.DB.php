@@ -1,23 +1,44 @@
 <?php
 class DB extends SQLite3 {
 
+  public $log = False;
+
   /**
    * @return void
    **/
   public function init($specialTags = false) {
+    $this->log(sprintf("init table myFiles, myTags, tags_files"));
     $this->exec('CREATE TABLE if not exists myFiles (label STRING, slug STRING PRIMARY KEY)');
     $this->exec('CREATE TABLE if not exists myTags (tag STRING, slug STRING PRIMARY KEY, top_tag STRING)');
     $this->exec('CREATE TABLE if not exists tags_files (file_slug STRING, tag_slug STRING)');
 
     // create specialTags if don't exist
-    try {
-      foreach ($specialTags as $tag) {
+    foreach ($specialTags as $tag) {
+      $this->log(sprintf("Managing special tag : %s", $tag));
+      try {
         $this->addTag($tag);
+      } catch (Exception $e) {
+        $this->log(sprintf("%s", $e->getMessage()));
       }
-    } catch (Exception $e) {
-     // no prob if already exist 
     }
-    
+  }
+
+
+  /**
+   * @return void
+   * @param string
+   * write log with special prefix
+   **/
+  public function log($string) {
+    $this->log->write($string, 'DB');
+  }
+
+  /**
+   * @return void
+   * @param Log object
+   **/
+  public function setLogger($log) {
+    $this->log = $log;
   }
 
   /**
@@ -26,6 +47,7 @@ class DB extends SQLite3 {
    * @param string $parent
    **/
   public function loadTags($jsonTags, $parent = False) {
+    $this->log(sprintf("Loading Tags (length %d)", sizeof($jsonTags)));
     foreach ($jsonTags as $key => $value) {
       if (!$parent) {
         $this->addTag($key);
@@ -45,6 +67,7 @@ class DB extends SQLite3 {
    * @return void
    **/
   public function cleanTagsFiles() {
+    $this->log("Deleting links between tags and files if slug is missing");
     $this->exec("DELETE FROM tags_files where tag_slug not in (select slug from myTags)");
     $this->exec("DELETE FROM tags_files where file_slug not in (select slug from myFiles)");
   }
@@ -55,6 +78,7 @@ class DB extends SQLite3 {
    * delete tags_files records if files are linked to non-leaf-tag
    * */
   public function cleanDb() {
+    $this->log("delete tags_files records if files are linked to non-leaf-tag");
     $this->exec("DELETE FROM tags_files where tag_slug in (select top_tag from myTags where top_tag is not null)");
   }
 
@@ -62,6 +86,7 @@ class DB extends SQLite3 {
    * @return void
    **/
   public function dropTags() {
+    $this->log('Deleting all tags');
     $this->exec('DELETE FROM myTags');
   }
 
@@ -71,6 +96,7 @@ class DB extends SQLite3 {
    * @param string $myTagParent
    **/
   public function addTag($myTag, $myTagParent = False) {
+    $this->log(sprintf('Adding tag %s with parent %s',$myTag, $myTagParent));
     $arrayResult = $this->querySingle(sprintf('select * from myTags where slug = "%s"', slugify($myTag)));
     if (!empty($arrayResult)) {
       throw new Exception(sprintf("ERROR : tag '%s' is already present into database.", $myTag));
@@ -96,6 +122,7 @@ class DB extends SQLite3 {
    * @param string $folderPath
    **/
   public function loadFiles($folderPath) {
+    $this->log(sprintf("Loading Files from folder : %s", $folderPath));
     if (!is_readable($folderPath)) {
       die(sprintf("Folder '%s' is not readable", $folderPath));
     }
@@ -105,15 +132,21 @@ class DB extends SQLite3 {
     $listFolder = scandir($folderPath);
 
     foreach ($listFolder as $content) {
+      $this->log(sprintf("Managing file %s", $content));
       # filter hidden content
       if (substr($content, 0, 1) != ".") {
         if (!is_dir($folderPath . DIRECTORY_SEPARATOR . $content)) {
           $mySlugifiedText = slugify($content);
+          $this->log(sprintf("Integrating file %s with slug %s", $content, $mySlugifiedText));
           $arrayResult = $this->querySingle(sprintf('select * from myFiles where slug = "%s"', $mySlugifiedText));
           if (empty($arrayResult)) {
             $this->exec(sprintf('insert into myFiles (label, slug) values ("%s", "%s")', $content, $mySlugifiedText));
           }
+        } else {
+          $this->log(sprintf("Ignoring folder %s", $content));
         }
+      } else {
+        $this->log(sprintf("Ignoring file %s", $content));
       }
     }
   }
@@ -127,6 +160,7 @@ class DB extends SQLite3 {
    * @param boolean $showSearchButton
    * */
   public function showTagTree($parent = False, $checkBoxFlag = False, $slugFile = False, $arraySlugTags = False, $showSearchButton = False) {
+    $this->log("Showing Tag Tree");
     $string = "<ul>";
 
     if ($parent) {
@@ -173,6 +207,7 @@ class DB extends SQLite3 {
    * @return array
    * */
   public function getTagAndChildren($tag) {
+    $this->log("Getting Tag and Children");
     # detect all-files
     # ################
     if ($tag == "all-files") {
@@ -204,6 +239,7 @@ class DB extends SQLite3 {
    * @return boolean
    * */
   public function hasChild($tag) {
+    $this->log(sprintf("Test if tag %s has child", $tag));
     $result = $this->query(sprintf("select slug from myTags where top_tag = '%s'", $tag));
     return ($result->fetchArray());
   }
@@ -214,6 +250,7 @@ class DB extends SQLite3 {
    * @return void
    * */
   public function deleteAllFromTag($tag, $print = True){
+    $this->log(sprintf("Deleting everything about tag %s", $tag));
     # delete records from tags_files table
     $this->query(sprintf("DELETE FROM tags_files where tag_slug = '%s'", slugify($tag)));
 
@@ -234,6 +271,7 @@ class DB extends SQLite3 {
    * @param string $slug
    **/
   public function getTagsFromFile($slug) {
+    $this->log(sprintf("Getting tags for file %s", $slug));
     $result = $this->query(sprintf("select tag_slug from tags_files where file_slug = '%s'", $slug));
     $array = array();
     while ($myResult = $result->fetchArray()){
@@ -247,6 +285,7 @@ class DB extends SQLite3 {
    * @param string $slug
    * */
   public function getFile($slug) {
+    $this->log(sprintf("Getting info file from its slug %s", $slug));
     $arrayResult = $this->querySingle(sprintf('select * from myFiles where slug = "%s"', $slug), true);
     if (!empty($arrayResult)) {
       return $arrayResult;
@@ -261,11 +300,13 @@ class DB extends SQLite3 {
    * @param array $jsonConfig
    * */
   public function deleteFile($slug, $jsonConfig) {
+    $this->log(sprintf("Deleting file and thumbnail from slug %s", $slug));
     if ($arrayResult = $this->querySingle(sprintf('select * from myFiles where slug = "%s"', $slug), true)) {
       $this->query(sprintf("DELETE FROM myFiles where slug = '%s'", $slug));
       $this->query(sprintf("DELETE FROM tags_files where file_slug = '%s'", $slug));
 
       # delete file on FS
+      $this->log(sprintf("Trying to delete %s", $_SESSION['configDirectory'] . DIRECTORY_SEPARATOR . $arrayResult['label']));
       @unlink($_SESSION['configDirectory'] . DIRECTORY_SEPARATOR . $arrayResult['label']);
       # delete thumbnails
       foreach ($jsonConfig['allowedExtensions'] as $allowedExtension) {
@@ -273,6 +314,7 @@ class DB extends SQLite3 {
         array_pop($myExplode);
         $myExplode[] = $allowedExtension;
         $filename = implode(".", $myExplode);
+        $this->log(sprintf("Trying to delete thumbnail %s", $_SESSION['configDirectory'] . DIRECTORY_SEPARATOR . $jsonConfig['thumbnailsDirectory'] . DIRECTORY_SEPARATOR . $filename));
         @unlink($_SESSION['configDirectory'] . DIRECTORY_SEPARATOR . $jsonConfig['thumbnailsDirectory'] . DIRECTORY_SEPARATOR . $filename);
       }
     }
@@ -284,6 +326,7 @@ class DB extends SQLite3 {
    * @param array $tagSlugs with '' : 'tag1', 'tag2', ...
    * */
   public function getFilesFromSlugs($tagSlugs) {
+    $this->log(sprintf("Getting files from tags slugs %s", (is_array($tagSlugs) ? implode(",", $tagSlugs) : $tagSlugs)));
     # detect all-files
     # ################
     if ($tagSlugs == "all-files") {
@@ -303,6 +346,7 @@ class DB extends SQLite3 {
    * @return array fileSlugs
    * */
   public function getFilesWithoutTags($pictures_only = '', $videos_only = '') {
+    $this->log("Getting files without tags");
     $sql = sprintf("SELECT slug  FROM myFiles WHERE slug not in (SELECT file_slug from tags_files )");
     $result = $this->query($sql);
     $fileSlugs = array();
@@ -330,6 +374,7 @@ class DB extends SQLite3 {
    * */
   public function getFilesFromTheirSlugs($fileSlugs) {
     array_walk($fileSlugs, 'prepare_for_sql');
+    $this->log(sprintf("Getting files from files slugs : %s", implode(",", $fileSlugs)));
     $sql = sprintf("SELECT label from myFiles  where slug in (%s) order by label", implode(",", $fileSlugs));
     $result = $this->query($sql);
     $fileLabels = array();
@@ -343,6 +388,7 @@ class DB extends SQLite3 {
    * @return array fileLabels
    * */
   public function getAllFileLabels() {
+    $this->log("Getting all file labels ordered by label ASC");
     $sql = sprintf("SELECT label from myFiles order by label");
     $result = $this->query($sql);
     $fileLabels = array();
@@ -357,6 +403,7 @@ class DB extends SQLite3 {
    * @return string displays buttons with javascript hack
    * */
   public function getSearchButtons($slugTag) {
+    $this->log("Getting search buttons");
     $myAndButton = '<svg id="%s" onclick="%s" version="1.1" baseProfile="full" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
       <circle cx="10" cy="10" r="10" fill="green" />
       <text x="10" y="12" font-size="10" text-anchor="middle" fill="white">+</text>
@@ -381,6 +428,7 @@ class DB extends SQLite3 {
    * @return array of orphan videos (no thumbnails)
    **/
   public function getOrphanVideos($folderPath, $thumbnailsDirectory, $allowedExtensions) {
+    $this->log("Looking for orphan videos");
     $listFolder = scandir($folderPath);
 
     $result = array();
@@ -417,6 +465,7 @@ class DB extends SQLite3 {
    * @return array of orphan thumbnails (no videos)
    **/
   public function getOrphanThumbnails($folderPath, $thumbnailsDirectory, $urlRootThumbnails) {
+    $this->log("Looking for orphan thumbnails");
     $listFolder = scandir($folderPath . DIRECTORY_SEPARATOR . $thumbnailsDirectory);
 
     $result = array();
