@@ -3,6 +3,12 @@
 - [ ] manage txt files into datas
 - [ ] metadata on tags
 
+# 1.1.4
+
+- [X] manage set time limit execution into config.json
+- [X] create class.Log.php, enabled/disabled with debug value into config.json
+- [X] remove php cli part
+
 # 1.1.3
 
 - [X] add right padding to second column pictures
