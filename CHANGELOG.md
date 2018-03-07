@@ -3,6 +3,10 @@
 - [ ] manage txt files into datas
 - [ ] metadata on tags
 
+# 1.1.5
+
+- [X] remove blocking CSS from issue.php
+
 # 1.1.4
 
 - [X] manage set time limit execution into config.json

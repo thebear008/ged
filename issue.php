@@ -109,19 +109,10 @@ echo sprintf("<title>%s v%s</title>", $jsonArray['platformName'],  $jsonArray["v
 # CSS embedded
 ##############
 echo "<style>";
-echo sprintf("div.firstColumn {width:%s; padding:0; margin: 0; display:inline;} ", $jsonArray["width"]["left"]);
-echo sprintf("div.secondColumn {width:%s; padding:0; margin: 0; display:inline;}", $jsonArray["width"]["center"]);
-echo sprintf("div.thirdColumn {width:%s; padding:0; margin: 0; display:inline;}", $jsonArray["width"]["right"]);
-echo "div.Column {float:left;}";
-echo "div.thirdColumn button {display:block; }";
 echo "span.all-media-link { color:green;  } ";
 echo "span.ok { color:green;  } ";
 echo "span.all-media-link:hover { cursor:pointer; color: black; } ";
 echo "svg:hover { cursor:pointer;  } ";
-echo "body, html { height:100%; overflow: hidden; margin:0 ; padding:0; } ";
-echo "div.Column { height: 95%; overflow-y: auto; overflow-x:hidden;  }";
-echo sprintf("div.tag-tree-first-column { height: %s; overflow-y: auto; overflow-x:hidden; padding : 0; margin:0;} ", $jsonArray['height']['tagTreeFirstColumn']);
-echo sprintf("div.tag-tree-third-column { height: %s; overflow-y: auto; overflow-x:hidden; padding : 0; margin:0;} ", $jsonArray['height']['tagTreeThirdColumn']);
 echo ".tag-with-children { font-weight: bold;  } ";
 echo ".tag-with-children:hover { cursor: pointer;  } ";
 echo "</style>";
