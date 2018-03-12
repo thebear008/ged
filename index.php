@@ -132,7 +132,7 @@ if (isset($_GET['refreshDb'])) {
   $pictures_without_tag = $db->getFilesWithoutTags(True);
   foreach ($pictures_without_tag as $picture) {
     $log->write(sprintf("Auto-tag picture %s with %s", $picture, $jsonArray['specialTags']['pictures']));
-    $db->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $picture, $jsonArray['specialTags']['pictures']));
+    $db->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $picture, slugify($jsonArray['specialTags']['pictures'])));
   }
   ###############################
   # END : tagPicture management #
@@ -144,7 +144,7 @@ if (isset($_GET['refreshDb'])) {
   $videos_without_tag = $db->getFilesWithoutTags(False, True);
   foreach ($videos_without_tag as $video) {
     $log->write(sprintf("Auto-tag video %s with %s", $video, $jsonArray['specialTags']['videos']));
-    $db->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $video, $jsonArray['specialTags']['videos']));
+    $db->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $video, slugify($jsonArray['specialTags']['videos'])));
   }
   ###############################
   # END : tagVideo management #
