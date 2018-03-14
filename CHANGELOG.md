@@ -3,6 +3,12 @@
 - [ ] manage txt files into datas
 - [ ] metadata on tags
 
+
+# 1.1.7
+
+- [X] handle non slugified tag for pictures or videos
+- [X] detect SESSION ended into ajax.php
+
 # 1.1.5
 
 - [X] remove blocking CSS from issue.php

@@ -11,6 +11,11 @@ $jsonArray = json_decode($fileHandle, true);
 
 $folderPath = $_SESSION['configDirectory'];
 
+# detect SESSION ended
+if (!isset($folderPath)) {
+  die('Please choose your data directory');
+}
+
 # log if debug == true
 $log = new Log((isset($jsonArray['log_file']) ? $jsonArray['log_file'] : 'application.log'), ($jsonArray["debug"] == "true"));
 $log->write("Log object created.", "AJAX");
