@@ -1,6 +1,8 @@
 {
   "platformName":  "myGED",
-  "version":  "1.1.7",
+  "version":  "1.1.8",
+  "autoTagPicture":  "true",
+  "autoTagVideo":  "true",
   "debug": "false",
   "hideTitles": "true", 
   "set_time_limit": "0",

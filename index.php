@@ -109,6 +109,9 @@ if (isset($_GET['refreshDb'])) {
   $db->dropTags();
   $log->write("All tags deleted");
 
+  # drop all files
+  $db->dropFiles();
+  $log->write("All files deleted from DB");
 
   # loadTags
   if (!isset($jsonArray['tags'])) {
@@ -131,7 +134,7 @@ if (isset($_GET['refreshDb'])) {
   #########################
   $pictures_without_tag = $db->getFilesWithoutTags(True);
   foreach ($pictures_without_tag as $picture) {
-    $log->write(sprintf("Auto-tag picture %s with %s", $picture, $jsonArray['specialTags']['pictures']));
+    $log->write(sprintf("Auto-tag picture %s with %s", $picture, slugify($jsonArray['specialTags']['pictures'])));
     $db->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $picture, slugify($jsonArray['specialTags']['pictures'])));
   }
   ###############################
@@ -143,12 +146,34 @@ if (isset($_GET['refreshDb'])) {
   #########################
   $videos_without_tag = $db->getFilesWithoutTags(False, True);
   foreach ($videos_without_tag as $video) {
-    $log->write(sprintf("Auto-tag video %s with %s", $video, $jsonArray['specialTags']['videos']));
+    $log->write(sprintf("Auto-tag video %s with %s", $video, slugify($jsonArray['specialTags']['videos'])));
     $db->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $video, slugify($jsonArray['specialTags']['videos'])));
   }
   ###############################
   # END : tagVideo management #
   ###############################
+
+  ##################
+  # autoTagPicture #
+  ##################
+  if ($jsonArray['autoTagPicture'] == 'true') {
+    $log->write(sprintf("Auto-tag ALL pictures %s", slugify($jsonArray['specialTags']['pictures'])));
+    $db->linkAllFilesToTag(slugify($jsonArray['specialTags']['pictures']), "pictures");
+  }
+  ########################
+  # END : autoTagPicture #
+  ########################
+
+  ##################
+  # autoTagVideo #
+  ##################
+  if ($jsonArray['autoTagVideo'] == 'true') {
+    $log->write(sprintf("Auto-tag ALL Videos %s", slugify($jsonArray['specialTags']['videos'])));
+    $db->linkAllFilesToTag(slugify($jsonArray['specialTags']['videos']), "videos");
+  }
+  ########################
+  # END : autoTagVideo #
+  ########################
 
 }
 # END : refreshDb only if $_GET['refreshDb']

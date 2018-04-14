@@ -92,6 +92,14 @@ class DB extends SQLite3 {
 
   /**
    * @return void
+   **/
+  public function dropFiles() {
+    $this->log('Deleting all files from DB');
+    $this->exec('DELETE FROM myFiles');
+  }
+
+  /**
+   * @return void
    * @param string $myTag
    * @param string $myTagParent
    **/
@@ -366,6 +374,34 @@ class DB extends SQLite3 {
       }
     }
     return $fileSlugs;
+  }
+
+
+  /**
+   * @return void
+   * @param string $tag
+   * @param string $filter
+   **/
+  public function linkAllFilesToTag($tag, $filter=False) {
+    $this->log(sprintf("Linking all files (filter %s) to tag %s", $filter, $tag));
+    $sql = sprintf("SELECT slug  FROM myFiles WHERE slug not in (SELECT file_slug from tags_files WHERE tag_slug = '%s' )", $tag);
+    $result = $this->query($sql);
+    while ($myResult = $result->fetchArray()){
+      if ($filter == "pictures" ) {
+        if (substr($myResult[0], -3) != 'mp4') {
+          $this->log(sprintf("Linking %s and %s because only pictures and extension is not mp4", $myResult[0], $tag));
+          $this->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $myResult[0], $tag));
+        }
+      } elseif ($filter == "videos") {
+        if (substr($myResult[0], -3) == 'mp4') {
+          $this->log(sprintf("Linking %s and %s because only videos and extension is mp4", $myResult[0], $tag));
+          $this->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $myResult[0], $tag));
+        }
+      } else {
+          $this->log(sprintf("Linking %s and %s because no filter", $myResult[0], $tag));
+          $this->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $myResult[0], $tag));
+      }
+    }
   }
 
   /**
