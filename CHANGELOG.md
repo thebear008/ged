@@ -3,11 +3,15 @@
 - [ ] manage txt files into datas
 - [ ] metadata on tags
 
+# 1.1.9
+
+- resizable columns (CSS)
+
 # 1.1.8
 
 - [X] clean myFiles table when refreshing DB
-- [ ] tag "pictures" pictures even if other tags linked when refreshing DB (config file value autoTagPicture)
-- [ ] tag "videos" videos even if other tags linked when refreshing DB (config file value autoTagVideo)
+- [X] tag "pictures" pictures even if other tags linked when refreshing DB (config file value autoTagPicture)
+- [X] tag "videos" videos even if other tags linked when refreshing DB (config file value autoTagVideo)
 
 # 1.1.7
 

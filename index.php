@@ -200,7 +200,7 @@ echo "<style>";
 echo sprintf("div.firstColumn {width:%s; padding:0; margin: 0; display:inline;} ", $jsonArray["width"]["left"]);
 echo sprintf("div.secondColumn {width:%s; padding:0; margin: 0; display:inline;}", $jsonArray["width"]["center"]);
 echo sprintf("div.thirdColumn {width:%s; padding:0; margin: 0; display:inline;}", $jsonArray["width"]["right"]);
-echo "div.Column {float:left;}";
+echo "div.Column {float:left; resize: horizontal;}";
 echo "div.secondColumn img { padding-right:4px;  }";
 echo "div.thirdColumn button {display:block; }";
 echo "span.all-media-link { color:green;  } ";
