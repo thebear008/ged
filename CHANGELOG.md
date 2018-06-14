@@ -3,6 +3,10 @@
 - [ ] manage txt files into datas
 - [ ] metadata on tags
 
+# 1.1.11
+
+- [X] Add config field `width_diff_px_element_third_column`
+
 # 1.1.10
 
 - [X] auto-size third column picture/video
