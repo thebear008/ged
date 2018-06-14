@@ -200,7 +200,8 @@ echo "<style>";
 echo sprintf("div.firstColumn {width:%s; padding:0; margin: 0; display:inline;} ", $jsonArray["width"]["left"]);
 echo sprintf("div.secondColumn {width:%s; padding:0; margin: 0; display:inline;}", $jsonArray["width"]["center"]);
 echo sprintf("div.thirdColumn {width:%s; padding:0; margin: 0; display:inline;}", $jsonArray["width"]["right"]);
-echo "div.Column {float:left; resize: horizontal;}";
+echo "div.firstColumn {float:left; resize: horizontal;}";
+echo "div.secondColumn {float:left; resize: horizontal;}";
 echo "div.secondColumn img { padding-right:4px;  }";
 echo "div.thirdColumn button {display:block; }";
 echo "span.all-media-link { color:green;  } ";
@@ -222,6 +223,37 @@ echo "</style>";
 echo sprintf("<script type='text/javascript' src='jquery-3.2.1.min.js' ></script>");
 
 echo sprintf("<script type='text/javascript'  >
+
+// resize columns
+jQuery(document).ready(function() {
+  setInterval(function(){
+    width_max = jQuery('body').width()
+    total = 0
+    jQuery('div.Column').each(function (index, value) {
+      total += jQuery(this).outerWidth()
+    } )
+    if (total > width_max) {
+      // resize
+      my_diff = total - width_max
+      jQuery('div.thirdColumn').width( jQuery('div.thirdColumn').width() - parseInt(my_diff))
+    } else {
+      my_diff = width_max - total
+      jQuery('div.thirdColumn').width( jQuery('div.thirdColumn').width() + parseInt(my_diff))
+    }
+    // modify width of picture if any
+    if (jQuery('div.thirdColumn img')[0]) {
+      jQuery('div.thirdColumn img')[0].style = ''
+      jQuery(jQuery('div.thirdColumn img')[0]).width(jQuery('div.thirdColumn').width())
+    }
+    // modify width of video if any
+    if (jQuery('div.thirdColumn video')[0]) {
+      my_diff = jQuery('div.thirdColumn').width() - jQuery('div.thirdColumn video')[0].width
+      jQuery('div.thirdColumn video')[0].width += my_diff
+      jQuery('div.thirdColumn video')[0].height += my_diff
+    }
+
+  }, 100);
+})
 
 jQuery(document).ready(function() {
   // hide second level of tree tags

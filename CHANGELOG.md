@@ -3,9 +3,13 @@
 - [ ] manage txt files into datas
 - [ ] metadata on tags
 
+# 1.1.10
+
+- [X] auto-size third column picture/video
+
 # 1.1.9
 
-- resizable columns (CSS)
+- [X] resizable columns (CSS)
 
 # 1.1.8
 
