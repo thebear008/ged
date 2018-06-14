@@ -7,6 +7,7 @@
   "hideTitles": "true", 
   "set_time_limit": "0",
   "log_file": "application.log",
+  "width_diff_px_element_third_column": "10",
   "height": {
     "tagTreeFirstColumn": "80%",
     "tagTreeThirdColumn": "250px"

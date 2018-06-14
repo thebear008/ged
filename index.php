@@ -243,13 +243,13 @@ jQuery(document).ready(function() {
     // modify width of picture if any
     if (jQuery('div.thirdColumn img')[0]) {
       jQuery('div.thirdColumn img')[0].style = ''
-      jQuery(jQuery('div.thirdColumn img')[0]).width(jQuery('div.thirdColumn').width())
+      jQuery(jQuery('div.thirdColumn img')[0]).width(jQuery('div.thirdColumn').width() - %d)
     }
     // modify width of video if any
     if (jQuery('div.thirdColumn video')[0]) {
       my_diff = jQuery('div.thirdColumn').width() - jQuery('div.thirdColumn video')[0].width
-      jQuery('div.thirdColumn video')[0].width += my_diff
-      jQuery('div.thirdColumn video')[0].height += my_diff
+      jQuery('div.thirdColumn video')[0].width += my_diff - %d
+      jQuery('div.thirdColumn video')[0].height += my_diff - %d
     }
 
   }, 100);
@@ -428,7 +428,7 @@ function openCloseTree(classOfColumn) {
 }
 <!-- END openCloseTree -->
 
-</script>", $jsonArray['urlRoot'], $jsonArray['video']['width'], $jsonArray['video']['height'],$jsonArray['pictureRight']['maxWidth'], $jsonArray['pictureRight']['maxHeight'], $jsonArray['urlRoot'], $jsonArray['urlRoot']);
+</script>", $jsonArray['width_diff_px_element_third_column'], $jsonArray['width_diff_px_element_third_column'], $jsonArray['width_diff_px_element_third_column'], $jsonArray['urlRoot'], $jsonArray['video']['width'], $jsonArray['video']['height'],$jsonArray['pictureRight']['maxWidth'], $jsonArray['pictureRight']['maxHeight'], $jsonArray['urlRoot'], $jsonArray['urlRoot']);
 echo "</head>";
 echo "<body>";
 
