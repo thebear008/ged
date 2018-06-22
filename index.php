@@ -210,7 +210,7 @@ echo "svg:hover { cursor:pointer;  } ";
 echo "body, html { height:100%; overflow: hidden; margin:0 ; padding:0; } ";
 echo "div.Column { height: 95%; overflow-y: auto; overflow-x:hidden;  }";
 echo sprintf("div.tag-tree-first-column { height: %s; overflow-y: auto; overflow-x:hidden; padding : 0; margin:0;} ", $jsonArray['height']['tagTreeFirstColumn']);
-echo sprintf("div.tag-tree-third-column { height: %s; overflow-y: auto; overflow-x:hidden; padding : 0; margin:0;} ", $jsonArray['height']['tagTreeThirdColumn']);
+echo sprintf("div.tag-tree-third-column { resize: vertical; height: %s; overflow-y: auto; overflow-x:hidden; padding : 0; margin:0;} ", $jsonArray['height']['tagTreeThirdColumn']);
 echo ".tag-with-children { font-weight: bold;  } ";
 echo ".tag-with-children:hover { cursor: pointer;  } ";
 echo ".open-close-tree:hover { cursor: pointer;   }";
