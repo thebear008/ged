@@ -3,6 +3,14 @@
 - [ ] manage txt files into datas
 - [ ] metadata on tags
 
+# 1.1.13
+
+- [X] delete thumbnails if no more videos when cleaning DB
+
+# 1.1.12
+
+- [X] resize tagtree for third column
+
 # 1.1.11
 
 - [X] Add config field `width_diff_px_element_third_column`

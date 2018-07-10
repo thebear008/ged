@@ -183,7 +183,7 @@ if (isset($_GET['refreshDb'])) {
 # cleanDb only if $_GET['cleanDb']
 if (isset($_GET['cleanDb'])) {
   $log->write("Cleaning DB");
-  $db->cleanDb();
+  $db->cleanDb($folderPath, $jsonArray);
 }
 # END : cleanDb only if $_GET['cleanDb']
 # #######################################

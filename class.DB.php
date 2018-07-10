@@ -75,11 +75,17 @@ class DB extends SQLite3 {
 
   /**
    * @return void
+   * @param string $folderPath configDirectory
+   * @param array $jsonArray
    * delete tags_files records if files are linked to non-leaf-tag
    * */
-  public function cleanDb() {
+  public function cleanDb($folderPath, $jsonArray) {
     $this->log("delete tags_files records if files are linked to non-leaf-tag");
     $this->exec("DELETE FROM tags_files where tag_slug in (select top_tag from myTags where top_tag is not null)");
+
+    # delete orphan thumbnails
+    $this->log("Delete orphan thumbnails");
+    $this->deleteOrphanThumbnails($folderPath, $jsonArray['thumbnailsDirectory'], $jsonArray['urlRootThumbnails']);
   }
 
   /**
@@ -528,6 +534,43 @@ class DB extends SQLite3 {
     }
     return $result;
   }
+
+
+  /**
+   * @return void
+   * delete orphan thumbnails
+   **/
+  public function deleteOrphanThumbnails($folderPath, $thumbnailsDirectory, $urlRootThumbnails) {
+    $this->log("Deleting orphan thumbnails");
+    $listFolder = scandir($folderPath . DIRECTORY_SEPARATOR . $thumbnailsDirectory);
+
+    $result = array();
+    foreach ($listFolder as $content) {
+      # filter hidden content
+      if (substr($content, 0, 1) != ".") {
+        if (!is_dir($folderPath . DIRECTORY_SEPARATOR . $content)) {
+          $my_explode = explode('.', $content);
+          # test if video exists
+          $proof_of_existence = false;
+          $myExplode = explode(".", $content);
+          array_pop($myExplode);
+          $myExplode[] = "mp4";
+          $filename = implode(".", $myExplode);
+          if (file_exists($folderPath . DIRECTORY_SEPARATOR . $filename)) {
+            $proof_of_existence = true;
+          }
+
+          if ($proof_of_existence == false) {
+            $this->log(sprintf("Delete orphan thumbnail %s", $content));
+            @unlink($folderPath . DIRECTORY_SEPARATOR . $thumbnailsDirectory . DIRECTORY_SEPARATOR . $content);
+          }
+        }
+      }
+    }
+  }
+
+
+
 }
 
 /**
