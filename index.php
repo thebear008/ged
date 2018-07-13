@@ -221,7 +221,6 @@ echo "</style>";
 ####################
 
 echo sprintf("<script type='text/javascript' src='jquery-3.2.1.min.js' ></script>");
-
 echo sprintf("<script type='text/javascript'  >
 
 // resize columns
@@ -318,6 +317,11 @@ function populateThirdColumn(mySlug, myImgObject, mp4Name, mySlugMp4) {
   
 
   if (mp4Name) {
+    var myDivResize = document.createElement('div');
+    myDivResize.style.resize = 'vertical';
+    myDivResize.style.overflow = 'auto';
+    document.getElementById(\"myContent\").appendChild(myDivResize);
+
     var myNewVideo = document.createElement('video');
     myNewVideo.width = '%d';
     myNewVideo.height = '%d';
@@ -326,13 +330,18 @@ function populateThirdColumn(mySlug, myImgObject, mp4Name, mySlugMp4) {
     sourceMP4.src = mp4Name;
     sourceMP4.type = 'video/mp4';
     myNewVideo.appendChild(sourceMP4);
-    document.getElementById(\"myContent\").appendChild(myNewVideo);
+    myDivResize.appendChild(myNewVideo);
   } else {
+    var myDivResize = document.createElement('div');
+    myDivResize.style.resize = 'vertical';
+    myDivResize.style.overflow = 'auto';
+    document.getElementById(\"myContent\").appendChild(myDivResize);
+
     var myNewImg = new Image();
     myNewImg.src = myImgObject.src;
     myNewImg.style.maxWidth = '%s';
     myNewImg.style.maxHeight = '%s';
-    document.getElementById(\"myContent\").appendChild(myNewImg);
+    myDivResize.appendChild(myNewImg);
   }
   req = new XMLHttpRequest();
 
