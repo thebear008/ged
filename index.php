@@ -203,12 +203,12 @@ echo sprintf("div.thirdColumn {width:%s; padding:0; margin: 0; display:inline;}"
 echo "div.firstColumn {float:left; resize: horizontal;}";
 echo "div.secondColumn {float:left; resize: horizontal;}";
 echo "div.secondColumn img { padding-right:4px;  }";
-echo "div.thirdColumn button {display:block; }";
+echo "div.thirdColumn button {display:block;}";
 echo "span.all-media-link { color:green;  } ";
 echo "span.all-media-link:hover { cursor:pointer; color: black; } ";
 echo "svg:hover { cursor:pointer;  } ";
 echo "body, html { height:100%; overflow: hidden; margin:0 ; padding:0; } ";
-echo "div.Column { height: 95%; overflow-y: auto; overflow-x:hidden;  }";
+echo "div.Column { height: 100%; overflow-y: auto; overflow-x:hidden;  }";
 echo sprintf("div.tag-tree-first-column { height: %s; overflow-y: auto; overflow-x:hidden; padding : 0; margin:0;} ", $jsonArray['height']['tagTreeFirstColumn']);
 echo sprintf("div.tag-tree-third-column { resize: vertical; height: %s; overflow-y: auto; overflow-x:hidden; padding : 0; margin:0;} ", $jsonArray['height']['tagTreeThirdColumn']);
 echo ".tag-with-children { font-weight: bold;  } ";
@@ -243,12 +243,18 @@ jQuery(document).ready(function() {
     if (jQuery('div.thirdColumn img')[0]) {
       jQuery('div.thirdColumn img')[0].style = ''
       jQuery(jQuery('div.thirdColumn img')[0]).width(jQuery('div.thirdColumn').width() - %d)
+      jQuery(jQuery('div.thirdColumn img')[0]).height('95%%')
+      jQuery('div.tag-tree-third-column').height(jQuery('div.secondColumn').height() - jQuery('div.thirdColumn img').height() - 65)
     }
     // modify width of video if any
     if (jQuery('div.thirdColumn video')[0]) {
       my_diff = jQuery('div.thirdColumn').width() - jQuery('div.thirdColumn video')[0].width
       jQuery('div.thirdColumn video')[0].width += my_diff - %d
       jQuery('div.thirdColumn video')[0].height += my_diff - %d
+        if (parseInt(jQuery('#myContent div')[0].style.height.replace('px','')) > 50) { 
+          jQuery('div.thirdColumn video')[0].height = jQuery('#myContent div')[0].style.height.replace('px','') - 5
+        }
+      jQuery('div.tag-tree-third-column').height(jQuery('div.secondColumn').height() - jQuery('div.thirdColumn video').height() - 65)
     }
 
   }, 100);

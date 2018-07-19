@@ -3,6 +3,10 @@
 - [ ] manage txt files into datas
 - [ ] metadata on tags
 
+# 1.1.15
+
+- [X] auto resize vertically thrid column
+
 # 1.1.14
 
 - [X] first version of resizable vertical third column media
