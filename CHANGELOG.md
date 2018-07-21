@@ -3,6 +3,11 @@
 - [ ] manage txt files into datas
 - [ ] metadata on tags
 
+# 1.1.16
+
+- [ ] respect pictures ratio in third column
+- [ ] resize media in third column if too big
+
 # 1.1.15
 
 - [X] auto resize vertically thrid column
