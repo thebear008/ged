@@ -405,20 +405,23 @@ function populateThirdColumn(mySlug, myImgObject, mp4Name, mySlugMp4) {
 
 
 function linkTagToFile(myCheckbox, mySlugFile) {
-  req = new XMLHttpRequest();
-
-  req.onreadystatechange = function(event) {
-      // XMLHttpRequest.DONE === 4
-      if (this.readyState === XMLHttpRequest.DONE) {
-          if (this.status === 200) {
-            console.log('Ok linkTagToFile');
-          }
-      }
-  };
-
-  req.open('POST', '%sajax.php', true);
-  req.setRequestHeader(\"Content-type\", \"application/x-www-form-urlencoded\");
-  req.send('slugFile=' + mySlugFile + '&checked=' + myCheckbox.checked + '&slugTag=' + myCheckbox.value);
+    jQuery.ajax({
+        method: 'POST',
+        url: '%sajax.php',
+        dataType: 'json',
+        data: {
+            'slugFile': mySlugFile,
+            'checked': myCheckbox.checked,
+            'slugTag': myCheckbox.value
+        }
+    }).done(function(res) {
+        // for each sibling we check it if necessary
+        for (var i = 0; i < res.length; i++) {
+            if (!jQuery('#my-input-' + res[i])[0].checked) {
+                jQuery('#my-input-' + res[i]).click()
+            }
+        }
+    })
 }
 
 <!-- addToSearchInputText -->

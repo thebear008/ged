@@ -39,6 +39,11 @@ if (isset($_POST['slugFile']) && isset($_POST['checked']) && isset($_POST['slugT
     # add link
     $log->write(sprintf("Linking file %s with tag %s", $_POST['slugFile'], $_POST['slugTag']), "AJAX");
     $db->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $_POST['slugFile'], $_POST['slugTag']));
+    # check if this tag has siblings
+    header('Content-Type: application/json');
+    if (isset($jsonArray["tags-of-tags"][$_POST['slugTag']])) {
+        echo json_encode($jsonArray["tags-of-tags"][$_POST['slugTag']]);
+    }
   } else {
     # remove link
     $log->write(sprintf("Unlinking file %s with tag %s", $_POST['slugFile'], $_POST['slugTag']), "AJAX");

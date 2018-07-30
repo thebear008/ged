@@ -2,11 +2,17 @@
 
 - [ ] manage txt files into datas
 - [ ] metadata on tags
+- [ ] new CSS for tag tree
+- [ ] manage GIF the same way as MP4
+
+# 1.2.0
+
+- [X] tags of tags
 
 # 1.1.16
 
-- [ ] respect pictures ratio in third column
-- [ ] resize media in third column if too big
+- [X] respect pictures ratio in third column
+- [X] resize media in third column if too big
 
 # 1.1.15
 

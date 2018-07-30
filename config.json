@@ -1,6 +1,6 @@
 {
   "platformName":  "myGED",
-  "version":  "1.1.16",
+  "version":  "1.2.0",
   "autoTagPicture":  "true",
   "autoTagVideo":  "true",
   "debug": "false",
@@ -50,7 +50,9 @@
   "tags": {
     "human": {
       "man": null,
-      "woman": null
+      "woman": null,
+      "kid": null,
+      "baby": null
     },
     "animal": {
       "tiger": null,
@@ -71,5 +73,8 @@
       },
       "bus": null
     }
+  },
+  "tags-of-tags": {
+    "man": ["baby", "kid"]
   }
 }
