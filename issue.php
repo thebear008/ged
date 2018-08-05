@@ -95,6 +95,9 @@ if (!$db) {
 # add logger to DB
 $db->setLogger($log);
 
+# add jsonArray to DB
+$db->setJsonArray($jsonArray);
+
 # create tables
 $log->write(sprintf('Init DB with tag picture = %s and video = %s', $jsonArray['specialTags']['pictures'], $jsonArray['specialTags']['videos']));
 $db->init($jsonArray['specialTags']);

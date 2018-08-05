@@ -95,6 +95,8 @@ if (!$db) {
 # add logger to DB
 $db->setLogger($log);
 
+# add jsonArray to DB
+$db->setJsonArray($jsonArray);
 
 # create tables
 $log->write(sprintf('Init DB with tag picture = %s and video = %s', $jsonArray['specialTags']['pictures'], $jsonArray['specialTags']['videos']));
@@ -289,7 +291,7 @@ jQuery(document).ready(function() {
   })
 });
 
-function populateThirdColumn(mySlug, myImgObject, mp4Name, mySlugMp4) {
+function populateThirdColumn(mySlug, myImgObject, mp4Name, mySlugMp4, gifName) {
   // reset third column
   document.getElementById(\"myContent\").innerHTML = '';
 
@@ -363,7 +365,11 @@ function populateThirdColumn(mySlug, myImgObject, mp4Name, mySlugMp4) {
     document.getElementById(\"myContent\").appendChild(myDivResize);
 
     var myNewImg = new Image();
-    myNewImg.src = myImgObject.src;
+    if (gifName) {
+        myNewImg.src = gifName;
+    } else {
+        myNewImg.src = myImgObject.src;
+    }
     myNewImg.style.maxWidth = '%s';
     myNewImg.style.maxHeight = '%s';
     myDivResize.appendChild(myNewImg);
@@ -549,28 +555,52 @@ if ($search != '') {
 }
 foreach ($myFileLabels as $pictureMedia) {
 
-  # detect if is not mp4 file
-  if (substr($pictureMedia,-3) != "mp4") {
+  # detect if is not mp4 file nor gif
+  if (!in_array(strtolower(substr($pictureMedia,-3)), $jsonArray['videosExtentions'])) {
     $log->write(sprintf("Consider %s as picture", $pictureMedia));
-    echo sprintf("<img id='show-%s' onclick='window.scrollTo(0,0);  populateThirdColumn(\"%s\", this, false, false)' height='%s' src='%s%s' />", slugify($pictureMedia), slugify($pictureMedia), $jsonArray['pictureMiddle']['height'], $jsonArray['urlRootDatas'], $pictureMedia);
+    echo sprintf("<img id='show-%s' onclick='window.scrollTo(0,0);  populateThirdColumn(\"%s\", this, false, false, false)' height='%s' src='%s%s' />", slugify($pictureMedia), slugify($pictureMedia), $jsonArray['pictureMiddle']['height'], $jsonArray['urlRootDatas'], $pictureMedia);
   } else {
-    $log->write(sprintf("Consider %s as MP4 video", $pictureMedia));
-    $mp4File = $pictureMedia;
-    foreach ($jsonArray['allowedExtensions'] as $allowedExtension) {
-      $log->write(sprintf("Looking for thumbnails with extension %s", $allowedExtension));
-      $myExplode = explode(".", $mp4File);
-      array_pop($myExplode);
-      $myExplode[] = $allowedExtension;
-      $filename = implode(".", $myExplode);
-      if (file_exists($_SESSION['configDirectory'] . DIRECTORY_SEPARATOR . $jsonArray['thumbnailsDirectory'] . DIRECTORY_SEPARATOR . $filename)) {
-        $log->write(sprintf("Thumbnail found : %s", $filename));
-        $pictureMedia = $filename;
-        break;
-      } else {
-        $log->write(sprintf("Thumbnail not found : %s", $filename));
-      }
+    # two cases to manage
+    if (strtolower(substr($pictureMedia,-3)) == 'mp4') {
+        # A/ mp4
+        $log->write(sprintf("Consider %s as MP4 video", $pictureMedia));
+        $mp4File = $pictureMedia;
+        foreach ($jsonArray['allowedExtensions'] as $allowedExtension) {
+          $log->write(sprintf("Looking for thumbnails with extension %s", $allowedExtension));
+          $myExplode = explode(".", $mp4File);
+          array_pop($myExplode);
+          $myExplode[] = $allowedExtension;
+          $filename = implode(".", $myExplode);
+          if (file_exists($_SESSION['configDirectory'] . DIRECTORY_SEPARATOR . $jsonArray['thumbnailsDirectory'] . DIRECTORY_SEPARATOR . $filename)) {
+            $log->write(sprintf("Thumbnail found : %s", $filename));
+            $pictureMedia = $filename;
+            break;
+          } else {
+            $log->write(sprintf("Thumbnail not found : %s", $filename));
+          }
+        }
+        echo sprintf("<img id='show-%s' onclick='window.scrollTo(0,0); populateThirdColumn(\"%s\", this, \"%s%s\", \"%s\", false)' height='%s' src='%s%s' />", slugify($pictureMedia), slugify($mp4File), $jsonArray['urlRootDatas'],  $mp4File,  slugify($mp4File), $jsonArray['pictureMiddle']['height'], $jsonArray['urlRootThumbnails'], $pictureMedia);
+
+    } else {
+        # B/ gif
+        $log->write(sprintf("Consider %s as GIF video", $pictureMedia));
+        $gifFile = $pictureMedia;
+        foreach ($jsonArray['allowedExtensions'] as $allowedExtension) {
+          $log->write(sprintf("Looking for thumbnails with extension %s", $allowedExtension));
+          $myExplode = explode(".", $gifFile);
+          array_pop($myExplode);
+          $myExplode[] = $allowedExtension;
+          $filename = implode(".", $myExplode);
+          if (file_exists($_SESSION['configDirectory'] . DIRECTORY_SEPARATOR . $jsonArray['thumbnailsDirectory'] . DIRECTORY_SEPARATOR . $filename)) {
+            $log->write(sprintf("Thumbnail found : %s", $filename));
+            $pictureMedia = $filename;
+            break;
+          } else {
+            $log->write(sprintf("Thumbnail not found : %s", $filename));
+          }
+        }
+        echo sprintf("<img id='show-%s' onclick='window.scrollTo(0,0);  populateThirdColumn(\"%s\", this, false, false, \"%s%s\")' height='%s' src='%s%s' />", slugify($pictureMedia), slugify($gifFile), $jsonArray['urlRootDatas'], $gifFile, $jsonArray['pictureMiddle']['height'], $jsonArray['urlRootThumbnails'], $pictureMedia);
     }
-    echo sprintf("<img id='show-%s' onclick='window.scrollTo(0,0); populateThirdColumn(\"%s\", this, \"%s%s\", \"%s\")' height='%s' src='%s%s' />", slugify($pictureMedia), slugify($mp4File), $jsonArray['urlRootDatas'],  $mp4File,  slugify($mp4File), $jsonArray['pictureMiddle']['height'], $jsonArray['urlRootThumbnails'], $pictureMedia);
   }
 }
 

@@ -2,6 +2,7 @@
 class DB extends SQLite3 {
 
   public $log = False;
+  public $jsonArray = False;
 
   /**
    * @return void
@@ -39,6 +40,25 @@ class DB extends SQLite3 {
    **/
   public function setLogger($log) {
     $this->log = $log;
+  }
+
+  /**
+   * @return void
+   * @param array $jsonArray
+   **/
+  public function setJsonArray($jsonArray) {
+    $this->jsonArray = $jsonArray;
+  }
+
+  /**
+   * @return Boolean
+   * @param string $filename
+   **/
+  public function isVideo($filename) {
+    if (in_array(strtolower(substr($filename, -3)), $this->jsonArray['videosExtentions'])) {
+        return True;
+    }
+    return False;
   }
 
   /**
@@ -366,12 +386,12 @@ class DB extends SQLite3 {
     $fileSlugs = array();
     while ($myResult = $result->fetchArray()){
       if ($pictures_only === True ) {
-        if (substr($myResult[0], -3) != 'mp4') {
+        if (!$this->isVideo($myResult[0])) {
           $fileSlugs[$myResult[0]] = $myResult[0];
         }
       } else {
         if ($videos_only === True) {
-          if (substr($myResult[0], -3) == 'mp4') {
+          if ($this->isVideo($myResult[0])) {
             $fileSlugs[$myResult[0]] = $myResult[0];
           }
         } else {
@@ -394,13 +414,13 @@ class DB extends SQLite3 {
     $result = $this->query($sql);
     while ($myResult = $result->fetchArray()){
       if ($filter == "pictures" ) {
-        if (substr($myResult[0], -3) != 'mp4') {
-          $this->log(sprintf("Linking %s and %s because only pictures and extension is not mp4", $myResult[0], $tag));
+        if (!$this->isVideo($myResult[0])) {
+          $this->log(sprintf("Linking %s and %s because only pictures and extension is not in %s", $myResult[0], $tag, implode(',', $this->jsonArray['videosExtentions'])));
           $this->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $myResult[0], $tag));
         }
       } elseif ($filter == "videos") {
-        if (substr($myResult[0], -3) == 'mp4') {
-          $this->log(sprintf("Linking %s and %s because only videos and extension is mp4", $myResult[0], $tag));
+        if ($this->isVideo($myResult[0])) {
+          $this->log(sprintf("Linking %s and %s because only videos and extension is in %s", $myResult[0], $tag, implode(',', $this->jsonArray['videosExtentions'])));
           $this->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $myResult[0], $tag));
         }
       } else {
@@ -479,7 +499,7 @@ class DB extends SQLite3 {
       if (substr($content, 0, 1) != ".") {
         if (!is_dir($folderPath . DIRECTORY_SEPARATOR . $content)) {
           $my_explode = explode('.', $content);
-          if (end($my_explode) == "mp4") {
+          if ($this->isVideo($content)) {
             # test if thumbnail exists
             $proof_of_existence = false;
             foreach ($allowedExtensions as $allowedExtension) {
@@ -518,14 +538,15 @@ class DB extends SQLite3 {
           $my_explode = explode('.', $content);
           # test if video exists
           $proof_of_existence = false;
-          $myExplode = explode(".", $content);
-          array_pop($myExplode);
-          $myExplode[] = "mp4";
-          $filename = implode(".", $myExplode);
-          if (file_exists($folderPath . DIRECTORY_SEPARATOR . $filename)) {
-            $proof_of_existence = true;
+          foreach ($this->jsonArray['videosExtentions'] as $ext){
+              $myExplode = explode(".", $content);
+              array_pop($myExplode);
+              $myExplode[] = $ext;
+              $filename = implode(".", $myExplode);
+              if (file_exists($folderPath . DIRECTORY_SEPARATOR . $filename)) {
+                $proof_of_existence = true;
+              }
           }
-
           if ($proof_of_existence == false) {
             $result[$content] = $content;
           }
@@ -552,12 +573,14 @@ class DB extends SQLite3 {
           $my_explode = explode('.', $content);
           # test if video exists
           $proof_of_existence = false;
-          $myExplode = explode(".", $content);
-          array_pop($myExplode);
-          $myExplode[] = "mp4";
-          $filename = implode(".", $myExplode);
-          if (file_exists($folderPath . DIRECTORY_SEPARATOR . $filename)) {
-            $proof_of_existence = true;
+          foreach($this->jsonArray['videosExtentions'] as $ext) {
+              $myExplode = explode(".", $content);
+              array_pop($myExplode);
+              $myExplode[] = $ext;
+              $filename = implode(".", $myExplode);
+              if (file_exists($folderPath . DIRECTORY_SEPARATOR . $filename)) {
+                $proof_of_existence = true;
+              }
           }
 
           if ($proof_of_existence == false) {

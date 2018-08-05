@@ -3,7 +3,10 @@
 - [ ] manage txt files into datas
 - [ ] metadata on tags
 - [ ] new CSS for tag tree
-- [ ] manage GIF the same way as MP4
+
+# 1.2.1
+
+- [X] manage GIF files like MP4 ones
 
 # 1.2.0
 
