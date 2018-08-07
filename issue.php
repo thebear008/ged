@@ -99,7 +99,7 @@ $db->setLogger($log);
 $db->setJsonArray($jsonArray);
 
 # create tables
-$log->write(sprintf('Init DB with tag picture = %s and video = %s', $jsonArray['specialTags']['pictures'], $jsonArray['specialTags']['videos']));
+$log->write(sprintf('Init DB with tag picture = %s and video = %s and gif = %s', $jsonArray['specialTags']['pictures'], $jsonArray['specialTags']['videos'], $jsonArray['specialTags']['gif']));
 $db->init($jsonArray['specialTags']);
 
 
@@ -154,6 +154,23 @@ if (isset($_GET['tagVideo'])) {
 ###############################
 # END : tagVideo management #
 ###############################
+
+
+#########################
+# tagGif management #
+#########################
+if (isset($_GET['tagGif'])) {
+  $log->write("Tagging gifs without tag");
+  $gifs_without_tag = $db->getFilesWithoutTags(False, False, True);
+  foreach ($gifs_without_tag as $gif) {
+    $log->write(sprintf("Tagging %s for gif %s", $jsonArray['specialTags']['gif'], $gif));
+    $db->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $gif, slugify($jsonArray['specialTags']['gif'])));
+  }
+}
+###############################
+# END : tagGif management #
+###############################
+
 
 
 
@@ -220,6 +237,22 @@ if (empty($videos_without_tag)) {
   echo "<ol>";
   foreach($videos_without_tag as $video) {
     echo sprintf("<li>%s</li>", $video);
+  }
+  echo "</ol>";
+}
+
+
+echo "<h2>Auto Tag GIFs</h2>";
+
+$gifs_without_tag = $db->getFilesWithoutTags(False, False, True);
+
+if (empty($gifs_without_tag)) {
+  echo "<span class='ok' >No gif without tag.</span>";
+} else {
+  echo sprintf("<a href='?tagGif=%d'>Tag '%s'</a>", time(), $jsonArray['specialTags']['gif']);
+  echo "<ol>";
+  foreach($gifs_without_tag as $gif) {
+    echo sprintf("<li>%s</li>", $gif);
   }
   echo "</ol>";
 }

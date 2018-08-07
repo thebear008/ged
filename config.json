@@ -1,8 +1,9 @@
 {
   "platformName":  "myGED",
-  "version":  "1.2.1",
+  "version":  "1.2.2",
   "autoTagPicture":  "true",
   "autoTagVideo":  "true",
+  "autoTagGif":  "true",
   "debug": "false",
   "hideTitles": "true", 
   "set_time_limit": "0",
@@ -48,7 +49,8 @@
   "urlRootThumbnails": "/ged/datas/thumbnails/",
   "specialTags": {
     "pictures": "pictures",
-    "videos": "videos"
+    "videos": "videos",
+    "gif": "gif"
   },
   "tags": {
     "human": {
@@ -66,6 +68,7 @@
       "landscape": null
     },
     "videos": null,
+    "gif": null,
     "vehicule": {
       "car": null,
       "motorcycle": {

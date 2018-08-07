@@ -62,6 +62,18 @@ class DB extends SQLite3 {
   }
 
   /**
+   * @return Boolean
+   * @param string $filename
+   **/
+  public function isGif($filename) {
+    if (in_array(strtolower(substr($filename, -3)), array("gif"))) {
+        return True;
+    }
+    return False;
+  }
+
+
+  /**
    * @return void
    * @param array $jsonTags
    * @param string $parent
@@ -379,7 +391,7 @@ class DB extends SQLite3 {
   /**
    * @return array fileSlugs
    * */
-  public function getFilesWithoutTags($pictures_only = '', $videos_only = '') {
+  public function getFilesWithoutTags($pictures_only = '', $videos_only = '', $gif_only='') {
     $this->log("Getting files without tags");
     $sql = sprintf("SELECT slug  FROM myFiles WHERE slug not in (SELECT file_slug from tags_files )");
     $result = $this->query($sql);
@@ -391,11 +403,17 @@ class DB extends SQLite3 {
         }
       } else {
         if ($videos_only === True) {
-          if ($this->isVideo($myResult[0])) {
+          if ($this->isVideo($myResult[0]) && !$this->isGif($myResult[0])) {
             $fileSlugs[$myResult[0]] = $myResult[0];
           }
         } else {
-          $fileSlugs[$myResult[0]] = $myResult[0];
+            if ($gif_only === True) {
+                if ($this->isGif($myResult[0])) {
+                  $fileSlugs[$myResult[0]] = $myResult[0];
+                }
+            } else {
+              $fileSlugs[$myResult[0]] = $myResult[0];
+            }
         }
       }
     }
@@ -419,8 +437,13 @@ class DB extends SQLite3 {
           $this->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $myResult[0], $tag));
         }
       } elseif ($filter == "videos") {
-        if ($this->isVideo($myResult[0])) {
-          $this->log(sprintf("Linking %s and %s because only videos and extension is in %s", $myResult[0], $tag, implode(',', $this->jsonArray['videosExtentions'])));
+        if ($this->isVideo($myResult[0]) && !$this->isGif($myResult[0])) {
+          $this->log(sprintf("Linking %s and %s because only videos and extension is in %s and not gif", $myResult[0], $tag, implode(',', $this->jsonArray['videosExtentions'])));
+          $this->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $myResult[0], $tag));
+        }
+      } elseif ($filter == "gif") {
+        if ($this->isGif($myResult[0])) {
+          $this->log(sprintf("Linking %s and %s because extension is gif", $myResult[0], $tag));
           $this->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $myResult[0], $tag));
         }
       } else {

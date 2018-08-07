@@ -99,7 +99,7 @@ $db->setLogger($log);
 $db->setJsonArray($jsonArray);
 
 # create tables
-$log->write(sprintf('Init DB with tag picture = %s and video = %s', $jsonArray['specialTags']['pictures'], $jsonArray['specialTags']['videos']));
+$log->write(sprintf('Init DB with tag picture = %s and video = %s and gif = %s', $jsonArray['specialTags']['pictures'], $jsonArray['specialTags']['videos'], $jsonArray['specialTags']['gif']));
 $db->init($jsonArray['specialTags']);
 
 # ##########################################
@@ -155,6 +155,19 @@ if (isset($_GET['refreshDb'])) {
   # END : tagVideo management #
   ###############################
 
+  #########################
+  # tagGif management #
+  #########################
+  $gif_without_tag = $db->getFilesWithoutTags(False, False, True);
+  foreach ($gif_without_tag as $gif) {
+    $log->write(sprintf("Auto-tag gif %s with %s", $gif, slugify($jsonArray['specialTags']['gif'])));
+    $db->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $gif, slugify($jsonArray['specialTags']['gif'])));
+  }
+  ###############################
+  # END : tagGif management #
+  ###############################
+
+
   ##################
   # autoTagPicture #
   ##################
@@ -176,6 +189,18 @@ if (isset($_GET['refreshDb'])) {
   ########################
   # END : autoTagVideo #
   ########################
+
+  ##################
+  # autoTagGif #
+  ##################
+  if ($jsonArray['autoTagGif'] == 'true') {
+    $log->write(sprintf("Auto-tag ALL gifs %s", slugify($jsonArray['specialTags']['gif'])));
+    $db->linkAllFilesToTag(slugify($jsonArray['specialTags']['gif']), "gif");
+  }
+  ########################
+  # END : autoTaggif #
+  ########################
+
 
 }
 # END : refreshDb only if $_GET['refreshDb']

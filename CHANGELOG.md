@@ -4,6 +4,11 @@
 - [ ] metadata on tags
 - [ ] new CSS for tag tree
 
+# 1.2.2
+
+- [X] fix auto tag picture/GIF
+- [X] create auto tag gif
+
 # 1.2.1
 
 - [X] manage GIF files like MP4 ones
