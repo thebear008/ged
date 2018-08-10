@@ -233,7 +233,22 @@ class DB extends SQLite3 {
         if ($hasChild) {
           $string .= sprintf("<li class='%s' >%s</li>", $classTagWithChildren, $myResult[0]);
         } else {
-          $string .= sprintf("<li class='%s' ><label for='my-input-%s'>%s</label> <input %s id='my-input-%s'  type='checkbox' value='%s' onclick='linkTagToFile(this, \"%s\")' /></li>", $classTagWithChildren, $myResult[0], $myResult[0], $checkedBoolean, $myResult[0], $myResult[0], $slugFile);
+          $string .= sprintf(
+                "<li class='%s' >
+                    <label for='my-input-%s'>
+                        
+                    <input class='new_third_col' %s id='my-input-%s'  type='checkbox' value='%s' onclick='linkTagToFile(this, \"%s\")' />
+                    <span class='new_third_col'>%s</span>
+                    </label>
+                </li>",
+                $classTagWithChildren,
+                $myResult[0],
+                $checkedBoolean,
+                $myResult[0],
+                $myResult[0],
+                $slugFile,
+                $myResult[0]
+                );
         }
       } elseif ($showSearchButton) {
         # option to add search button 

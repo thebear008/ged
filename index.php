@@ -247,6 +247,15 @@ echo "</style>";
 # END : CSS embedded
 ####################
 
+#####################
+# CSS : extern files
+#####################
+$url_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+echo sprintf('<link href="%sstyle.css" rel="stylesheet" />', $url_path);
+#########################
+# END CSS : extern files
+#########################
+
 echo sprintf("<script type='text/javascript' src='jquery-3.2.1.min.js' ></script>");
 echo sprintf("<script type='text/javascript'  >
 
