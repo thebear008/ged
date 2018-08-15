@@ -420,10 +420,10 @@ function populateThirdColumn(mySlug, myImgObject, mp4Name, mySlugMp4, gifName) {
             document.getElementById(\"myContent\").appendChild(myDiv);
 
             <!-- toggle tree -->
-            jQuery('#myContent li.tag-with-children').siblings('ul').toggle();
+            jQuery('#myContent li.no_link').siblings('ul').toggle();
             // onclick function
-            jQuery('#myContent li.tag-with-children').click(function() {
-               jQuery(this).next('ul').toggle();
+            jQuery('#myContent input.no_link').change(function() {
+                jQuery(this).parent().parent().siblings('ul').toggle()
             })
             <!-- END toggle tree -->
 

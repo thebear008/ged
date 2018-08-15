@@ -3,9 +3,13 @@
 - [ ] manage txt files into datas
 - [ ] metadata on tags
 
+# 1.2.4
+
+- [X] second version of CSS tag tree
+
 # 1.2.3
 
-- [ ] first step new CSS for tag tree (3rd column)
+- [X] first step new CSS for tag tree (3rd column)
 
 # 1.2.2
 

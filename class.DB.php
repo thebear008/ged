@@ -207,7 +207,8 @@ class DB extends SQLite3 {
    * */
   public function showTagTree($parent = False, $checkBoxFlag = False, $slugFile = False, $arraySlugTags = False, $showSearchButton = False) {
     $this->log("Showing Tag Tree");
-    $string = "<ul>";
+    $string = "";
+    $string .= "<ul>";
 
     if ($parent) {
       $result = $this->query(sprintf("select slug from myTags where top_tag = '%s' order by tag", $parent));
@@ -215,6 +216,12 @@ class DB extends SQLite3 {
       $result = $this->query("select slug from myTags where top_tag is null order by tag");
     } 
     while ($myResult = $result->fetchArray()){
+
+        if ($parent == False && $checkBoxFlag != False) {
+            $string .= "<div class='tag_tree_3rd_col'>";
+        }
+
+
       # add CSS class to tag with children
       $classTagWithChildren = "";
       $hasChild = False;
@@ -231,12 +238,22 @@ class DB extends SQLite3 {
 
         # tags with children cannot be linked to media
         if ($hasChild) {
-          $string .= sprintf("<li class='%s' >%s</li>", $classTagWithChildren, $myResult[0]);
+          $string .= sprintf(
+                "<li class='no_link'>
+                    <label for='my-input-%s'>
+                    <input class='no_link' id='my-input-%s'  type='checkbox' value='' />
+                    <span class='no_link'>%s</span>
+                    </label>
+                </li>",
+                $myResult[0],
+                $myResult[0],
+                $myResult[0]
+                );
+
         } else {
           $string .= sprintf(
                 "<li class='%s' >
                     <label for='my-input-%s'>
-                        
                     <input class='new_third_col' %s id='my-input-%s'  type='checkbox' value='%s' onclick='linkTagToFile(this, \"%s\")' />
                     <span class='new_third_col'>%s</span>
                     </label>
@@ -257,6 +274,10 @@ class DB extends SQLite3 {
         $string .= sprintf("<li class='%s' >%s</li>", $classTagWithChildren, $myResult[0]);
       }
       $string .= $this->showTagTree($myResult[0], $checkBoxFlag, $slugFile, $arraySlugTags, $showSearchButton);
+
+        if ($parent == False && $checkBoxFlag != False) {
+            $string .= "</div>";
+        }
     }
     $string .= "</ul>";
 
