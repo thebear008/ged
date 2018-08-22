@@ -3,6 +3,10 @@
 - [ ] manage txt files into datas
 - [ ] metadata on tags
 
+# 1.2.5
+
+- [X] third version of CSS tag tree
+
 # 1.2.4
 
 - [X] second version of CSS tag tree
