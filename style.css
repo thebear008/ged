@@ -6,7 +6,7 @@ input.new_third_col[type=checkbox], input.no_link[type=checkbox] {
 }
 
 span.new_third_col, span.no_link {
-background-color: #5AB385;
+background-color: #858484;
 border-radius: 4px;
 font-weight: 700;
 color: #FFF;
@@ -22,6 +22,8 @@ cursor: pointer;
 margin: 0 auto;
 padding-left: 40px;
 transition: background-color 150ms ease-in;
+margin-top: 6px;
+margin-bottom: 6px;
 }
 
 
@@ -64,11 +66,23 @@ background-size: 15px 15px;
 div.tag_tree_3rd_col {
   float: left;
   text-align: left;
-  margin-right:8px;
+  margin-right:15px;
+  margin-bottom:15px;
+  padding-right:12px;
 }
 
 div.tag-tree-third-column ul {
   list-style: none;
+  padding-left:20px;
+  background-color:rgba(211, 211, 211, 0.2);
+}
+
+div.tag-tree-third-column > ul {
+  list-style: none;
+  padding-left:0;
+  margin-top:0;
+  margin-bottom:0;
+  background-color:rgba(211, 211, 211, 0.1);
 }
 
 
