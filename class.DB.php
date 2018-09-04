@@ -12,6 +12,7 @@ class DB extends SQLite3 {
     $this->exec('CREATE TABLE if not exists myFiles (label STRING, slug STRING PRIMARY KEY)');
     $this->exec('CREATE TABLE if not exists myTags (tag STRING, slug STRING PRIMARY KEY, top_tag STRING)');
     $this->exec('CREATE TABLE if not exists tags_files (file_slug STRING, tag_slug STRING)');
+    $this->exec('CREATE TABLE if not exists files_info (file_slug STRING, year STRING, month STRING, day STRING, timestamp STRING)');
 
     // create specialTags if don't exist
     foreach ($specialTags as $tag) {
@@ -138,6 +139,15 @@ class DB extends SQLite3 {
 
   /**
    * @return void
+   **/
+  public function dropFilesInfo() {
+    $this->log('Deleting all files info from DB');
+    $this->exec('DELETE FROM files_info');
+  }
+
+
+  /**
+   * @return void
    * @param string $myTag
    * @param string $myTagParent
    **/
@@ -188,6 +198,54 @@ class DB extends SQLite3 {
           if (empty($arrayResult)) {
             $this->exec(sprintf('insert into myFiles (label, slug) values ("%s", "%s")', $content, $mySlugifiedText));
           }
+          #############
+          # files_info
+          $this->log(sprintf("Inserting files_info for file %s", $content));
+          $creation_timestamp = filectime($folderPath . DIRECTORY_SEPARATOR . $content);
+          $year = date("Y", $creation_timestamp);
+          $month = date("m", $creation_timestamp);
+          $day = date("d", $creation_timestamp);
+          $this->exec(sprintf('insert into files_info (file_slug, year, month, day, timestamp) values ("%s", "%s", "%s", "%s", "%s")',
+            $mySlugifiedText,
+            $year,
+            $month,
+            $day,
+            $creation_timestamp));
+          # END files_info
+          ################
+
+          ############################
+          # detect_tampermonkey_files
+          $tamper_monkey_values = $this->detect_tampermonkey_files($content);
+          if ($tamper_monkey_values) {
+            $this->log(sprintf("Tampermonkey file detected with values %s", print_r($tamper_monkey_values, true)));
+            $year = slugify($tamper_monkey_values['year']);
+            $author = slugify($tamper_monkey_values['author']);
+
+            try {
+              # create $year tag
+              $this->addTag($year, $this->jsonArray['specialTags']['date']);
+            } catch (Exception $e) {
+              # tag already present
+              $this->log(sprint("%s", $e->getMessage()));
+            }
+
+            try {
+              # create $author tag
+              $this->addTag($author, $this->jsonArray['specialTags']['authors']);
+            } catch (Exception $e) {
+              # tag already present
+              $this->log(sprint("%s", $e->getMessage()));
+            }
+
+            $this->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $mySlugifiedText, $year));
+            $this->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $mySlugifiedText, $author));
+
+          } else {
+            $this->log(sprintf("Tampermonkey file pattern did not match for %s", $content));
+          }
+          # END detect_tampermonkey_files
+          ################################
         } else {
           $this->log(sprintf("Ignoring folder %s", $content));
         }
@@ -520,6 +578,24 @@ class DB extends SQLite3 {
   }
 
   /**
+   * @return array("slug" => array("year" => 2017, "month" => 12, "day" => "23"))
+   **/
+  public function get_files_info() {
+    $this->log("Getting all files info");
+    $sql = sprintf("SELECT * from files_info");
+    $result = $this->query($sql);
+    $files_info = array();
+    while ($myResult = $result->fetchArray()){
+      $files_info[slugify($myResult[0])] = array(
+        "year" => $myResult[1],
+        "month" => $myResult[2],
+        "day" => $myResult[3]
+      );
+    }
+    return $files_info;
+  }
+
+  /**
    * @param string $slugTag
    * @return string displays buttons with javascript hack
    * */
@@ -651,7 +727,36 @@ class DB extends SQLite3 {
     }
   }
 
+  /**
+   * detect files names matching tampermonkey script convention
+   * @param string filename
+   * @return array("uri" => "21321321", "year" => 2017, "author" => "toto le retour") or False
+   * @example array(5) {
+  [0]=>
+  string(24) "author=24214224=2017.mp4"
+  [1]=>
+  string(6) "author"
+  [2]=>
+  string(8) "24214224"
+  [3]=>
+  string(4) "2017"
+  [4]=>
+  string(3) "mp4"
+}
+   **/
+  public function detect_tampermonkey_files($filename) {
+    $PATTERN = "/^([^=]+)=([^=]+)=([^=]+)\.(.+)$/";
+    preg_match($PATTERN, $filename, $res);
 
+    if (!empty($res)) {
+      return array(
+        "year" => $res[3],
+        "uri" => $res[2],
+        "author" => $res[1],
+      );
+    }
+    return False;
+  }
 
 }
 

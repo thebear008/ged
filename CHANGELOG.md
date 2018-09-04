@@ -3,6 +3,11 @@
 - [ ] manage txt files into datas
 - [ ] metadata on tags
 
+# 1.3.0
+
+- [X] auto tag new medias if they match VIMEO/DRIBBLE/INSTAGRAM pattern
+- [X] toggle 2nd column display (group by date of creation on filesystem)
+
 # 1.2.6
 
 - [X] fourth version of CSS tag tree

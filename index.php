@@ -115,6 +115,10 @@ if (isset($_GET['refreshDb'])) {
   $db->dropFiles();
   $log->write("All files deleted from DB");
 
+  # drop all files_info
+  $db->dropFilesInfo();
+  $log->write("All files info deleted from DB");
+
   # loadTags
   if (!isset($jsonArray['tags'])) {
     echo "Key tags is missing";
@@ -122,6 +126,10 @@ if (isset($_GET['refreshDb'])) {
   }
   $log->write("Loading tags from file");
   $db->loadTags($jsonArray['tags']);
+
+  # be sure that specialTags are present
+  $log->write('Be sure that specialTags are present');
+  $db->init($jsonArray['specialTags']);
 
   # loadFiles
   $log->write(sprintf("Loading files from folder : %s", $folderPath));
@@ -200,8 +208,6 @@ if (isset($_GET['refreshDb'])) {
   ########################
   # END : autoTaggif #
   ########################
-
-
 }
 # END : refreshDb only if $_GET['refreshDb']
 # ##########################################
@@ -505,6 +511,19 @@ function openCloseTree(classOfColumn) {
 }
 <!-- END openCloseTree -->
 
+
+<!-- switch_display -->
+function switch_display() {
+  var min_year = 9999;
+  jQuery('img').each(function() {
+    if (min_year > parseInt(jQuery(this).data('year'))) {
+      min_year = parseInt(jQuery(this).data('year'));
+    }
+  })
+  console.log(min_year);
+}
+<!-- END switch_display -->
+
 </script>", $jsonArray['width_diff_px_element_third_column'], $jsonArray['width_diff_px_element_third_column'], $jsonArray['width_diff_px_element_third_column'], $jsonArray['urlRoot'], $jsonArray['video']['width'], $jsonArray['video']['height'],$jsonArray['pictureRight']['maxWidth'], $jsonArray['pictureRight']['maxHeight'], $jsonArray['urlRoot'], $jsonArray['urlRoot']);
 echo "</head>";
 echo "<body>";
@@ -515,7 +534,8 @@ echo sprintf("<header>%s v%s &nbsp;
   <a href='?refreshDb=%d'>Refresh DB</a>
   <a href='?cleanDb=%d'>Clean DB</a>
   <a href='issue.php'>Issues</a>
-</header>", $jsonArray['platformName'], $jsonArray["version"], time(), time());
+  <button onclick='switch_display();' id='%s'>%s</button>
+</header>", $jsonArray['platformName'], $jsonArray["version"], time(), time(), 'button_switch_display', 'Switch display');
 
 
 $hideTitles = "";
@@ -587,12 +607,29 @@ if ($search != '') {
   $log->write("Get all files, no search detected.");
   $myFileLabels = $db->getAllFileLabels();
 }
-foreach ($myFileLabels as $pictureMedia) {
 
+# get files_info
+$log->write("Looking for files info");
+$files_info = $db->get_files_info();
+
+$index = 0;
+foreach ($myFileLabels as $pictureMedia) {
+  $index++;
+  $file_info = $files_info[slugify($pictureMedia)];
   # detect if is not mp4 file nor gif
   if (!in_array(strtolower(substr($pictureMedia,-3)), $jsonArray['videosExtentions'])) {
     $log->write(sprintf("Consider %s as picture", $pictureMedia));
-    echo sprintf("<img id='show-%s' onclick='window.scrollTo(0,0);  populateThirdColumn(\"%s\", this, false, false, false)' height='%s' src='%s%s' />", slugify($pictureMedia), slugify($pictureMedia), $jsonArray['pictureMiddle']['height'], $jsonArray['urlRootDatas'], $pictureMedia);
+    echo sprintf(
+      "<img data-year='%d' data-month='%d' data-day='%d' data-order='%d' id='show-%s' onclick='window.scrollTo(0,0);  populateThirdColumn(\"%s\", this, false, false, false)' height='%s' src='%s%s' />",
+      $file_info['year'],
+      $file_info['month'],
+      $file_info['day'],
+      $index,
+      slugify($pictureMedia),
+      slugify($pictureMedia),
+      $jsonArray['pictureMiddle']['height'],
+      $jsonArray['urlRootDatas'],
+      $pictureMedia);
   } else {
     # two cases to manage
     if (strtolower(substr($pictureMedia,-3)) == 'mp4') {
@@ -613,7 +650,20 @@ foreach ($myFileLabels as $pictureMedia) {
             $log->write(sprintf("Thumbnail not found : %s", $filename));
           }
         }
-        echo sprintf("<img id='show-%s' onclick='window.scrollTo(0,0); populateThirdColumn(\"%s\", this, \"%s%s\", \"%s\", false)' height='%s' src='%s%s' />", slugify($pictureMedia), slugify($mp4File), $jsonArray['urlRootDatas'],  $mp4File,  slugify($mp4File), $jsonArray['pictureMiddle']['height'], $jsonArray['urlRootThumbnails'], $pictureMedia);
+        echo sprintf(
+          "<img data-year='%d' data-month='%d' data-day='%d' data-order='%d' id='show-%s' onclick='window.scrollTo(0,0); populateThirdColumn(\"%s\", this, \"%s%s\", \"%s\", false)' height='%s' src='%s%s' />",
+          $file_info['year'],
+          $file_info['month'],
+          $file_info['day'],
+          $index,
+          slugify($pictureMedia),
+          slugify($mp4File),
+          $jsonArray['urlRootDatas'],
+          $mp4File,
+          slugify($mp4File),
+          $jsonArray['pictureMiddle']['height'],
+          $jsonArray['urlRootThumbnails'],
+          $pictureMedia);
 
     } else {
         # B/ gif
@@ -633,13 +683,27 @@ foreach ($myFileLabels as $pictureMedia) {
             $log->write(sprintf("Thumbnail not found : %s", $filename));
           }
         }
-        echo sprintf("<img id='show-%s' onclick='window.scrollTo(0,0);  populateThirdColumn(\"%s\", this, false, false, \"%s%s\")' height='%s' src='%s%s' />", slugify($pictureMedia), slugify($gifFile), $jsonArray['urlRootDatas'], $gifFile, $jsonArray['pictureMiddle']['height'], $jsonArray['urlRootThumbnails'], $pictureMedia);
+        echo sprintf(
+          "<img data-year='%d' data-month='%d' data-day='%d' data-order='%d' id='show-%s' onclick='window.scrollTo(0,0);  populateThirdColumn(\"%s\", this, false, false, \"%s%s\")' height='%s' src='%s%s' />",
+          $file_info['year'],
+          $file_info['month'],
+          $file_info['day'],
+          $index,
+          slugify($pictureMedia),
+          slugify($gifFile),
+          $jsonArray['urlRootDatas'],
+          $gifFile,
+          $jsonArray['pictureMiddle']['height'],
+          $jsonArray['urlRootThumbnails'],
+          $pictureMedia);
     }
   }
 }
 
 
 # END : secondColumn
+
+
 echo "</div>";
 
 # thirdColumn

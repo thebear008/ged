@@ -11,7 +11,7 @@ case "$1" in
   ;;
   "local-mac")
     echo "Deploying code locally on Mac"
-    cp -v *.php *.json *.js /Applications/MAMP/htdocs/ged
+    cp -v *.php *.json *.js *.css /Applications/MAMP/htdocs/ged
     cp -rv /Users/lonclegr/Pictures/ged/* /Applications/MAMP/htdocs/ged/datas/
   ;;
   *)
