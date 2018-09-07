@@ -227,7 +227,7 @@ class DB extends SQLite3 {
               $this->addTag($year, $this->jsonArray['specialTags']['date']);
             } catch (Exception $e) {
               # tag already present
-              $this->log(sprint("%s", $e->getMessage()));
+              $this->log(sprintf("%s", $e->getMessage()));
             }
 
             try {
@@ -235,7 +235,7 @@ class DB extends SQLite3 {
               $this->addTag($author, $this->jsonArray['specialTags']['authors']);
             } catch (Exception $e) {
               # tag already present
-              $this->log(sprint("%s", $e->getMessage()));
+              $this->log(sprintf("%s", $e->getMessage()));
             }
 
             $this->exec(sprintf('insert into tags_files(file_slug, tag_slug) values ("%s", "%s")', $mySlugifiedText, $year));
